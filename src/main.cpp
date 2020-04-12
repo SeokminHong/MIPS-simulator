@@ -1,9 +1,12 @@
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include "machine/machine.h"
 
 int main(int argc, char* argv[])
 {
+    Machine machine;
+
     std::ifstream source;
     source.open(argv[1]);
 
@@ -11,7 +14,6 @@ int main(int argc, char* argv[])
     
     while (source >> line, !source.fail())
     {
-        int num = std::stoi(line, 0, 16);
-        printf("%s\tDec: %d\tHex: %x\n", line.c_str(), num, num);
+        machine.AddInstruction(line);
     }
 }
