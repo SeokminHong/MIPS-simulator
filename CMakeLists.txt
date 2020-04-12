@@ -1,0 +1,1 @@
+ADD_EXECUTABLE( mips-sim main.cpp )
