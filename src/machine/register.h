@@ -15,5 +15,9 @@ enum class ERegister : uint8_t
     gp = 28,
     sp = 29,
     fp = 30,
-    ra = 31
+    ra = 31,
+
+    MAX
 };
+
+static constexpr int REG_MAX = static_cast<int>(ERegister::MAX);

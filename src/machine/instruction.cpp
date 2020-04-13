@@ -2,52 +2,73 @@
 #include <cstdio>
 
 #define DECLARE_INSTRUCTION(INSTNAME) \
-class INSTNAME : public IInstruction \
+class I##INSTNAME : public IInstruction \
 { \
 public: \
     virtual void Execute() override \
     {} \
+    virtual const std::string& GetName() const override { \
+        static std::string s{ #INSTNAME }; \
+        return s; \
+    } \
+    I##INSTNAME(uint32_t rawInst) : IInstruction(rawInst) {} \
 };
 
-DECLARE_INSTRUCTION(IAdd);
-DECLARE_INSTRUCTION(ISubtract);
-DECLARE_INSTRUCTION(IAddImmediate);
+DECLARE_INSTRUCTION(Add);
+DECLARE_INSTRUCTION(Subtract);
+DECLARE_INSTRUCTION(AddImmediate);
 
-DECLARE_INSTRUCTION(ILoadWord);
-DECLARE_INSTRUCTION(IStoreWord);
-DECLARE_INSTRUCTION(ILoadHalf);
-DECLARE_INSTRUCTION(ILoadHalfUnsigned);
-DECLARE_INSTRUCTION(IStoreHalf);
-DECLARE_INSTRUCTION(ILoadByte);
-DECLARE_INSTRUCTION(ILoadByteUnsigned);
-DECLARE_INSTRUCTION(IStoreByte);
-DECLARE_INSTRUCTION(ILoadUpperImmediate);
+DECLARE_INSTRUCTION(LoadWord);
+DECLARE_INSTRUCTION(StoreWord);
+DECLARE_INSTRUCTION(LoadHalf);
+DECLARE_INSTRUCTION(LoadHalfUnsigned);
+DECLARE_INSTRUCTION(StoreHalf);
+DECLARE_INSTRUCTION(LoadByte);
+DECLARE_INSTRUCTION(LoadByteUnsigned);
+DECLARE_INSTRUCTION(StoreByte);
+DECLARE_INSTRUCTION(LoadUpperImmediate);
 
-DECLARE_INSTRUCTION(IAnd);
-DECLARE_INSTRUCTION(IOr);
-DECLARE_INSTRUCTION(INor);
-DECLARE_INSTRUCTION(IAndImmediate);
-DECLARE_INSTRUCTION(IOrImmediate);
-DECLARE_INSTRUCTION(IShiftLeftLogical);
-DECLARE_INSTRUCTION(IShiftRightLogical);
+DECLARE_INSTRUCTION(And);
+DECLARE_INSTRUCTION(Or);
+DECLARE_INSTRUCTION(Nor);
+DECLARE_INSTRUCTION(AndImmediate);
+DECLARE_INSTRUCTION(OrImmediate);
+DECLARE_INSTRUCTION(ShiftLeftLogical);
+DECLARE_INSTRUCTION(ShiftRightLogical);
 
-DECLARE_INSTRUCTION(IBranchOnEqual);
-DECLARE_INSTRUCTION(IBranchOnNotEqual);
-DECLARE_INSTRUCTION(ISetOnLessThan);
-DECLARE_INSTRUCTION(ISetOnLessThanUnsigned);
-DECLARE_INSTRUCTION(ISetLessThanImmediate);
-DECLARE_INSTRUCTION(ISetLessThanImmediateUnsigned);
+DECLARE_INSTRUCTION(BranchOnEqual);
+DECLARE_INSTRUCTION(BranchOnNotEqual);
+DECLARE_INSTRUCTION(SetOnLessThan);
+DECLARE_INSTRUCTION(SetOnLessThanUnsigned);
+DECLARE_INSTRUCTION(SetLessThanImmediate);
+DECLARE_INSTRUCTION(SetLessThanImmediateUnsigned);
 
-DECLARE_INSTRUCTION(IJump);
-DECLARE_INSTRUCTION(IJumpRegister);
-DECLARE_INSTRUCTION(IJumpAndLink);
+DECLARE_INSTRUCTION(Jump);
+DECLARE_INSTRUCTION(JumpRegister);
+DECLARE_INSTRUCTION(JumpAndLink);
 
-IInstruction* IInstruction::MakeInstance(uint32_t rawInst)
+DECLARE_INSTRUCTION(Dummy);
+
+IInstruction::IInstruction(uint32_t raw)
 {
-    SInstruction inst;
+    inst.raw = raw;
+}
+
+IInstruction::inst_ptr IInstruction::MakeInstance(uint32_t rawInst)
+{
+    inst_t inst;
     inst.raw = rawInst;
-    printf("op: %d, rs: %d, rt: %d, rd: %d, shamt: %d, funct: %d\n", 
+    printf("op: %2d, rs: %2d, rt: %2d, rd: %2d, shamt: %2d, funct: %2d\n", 
            inst.field.op, inst.field.rs, inst.field.rt, inst.field.rd, inst.field.shamt, inst.field.funct);
+
+    if (inst.field.op == 0)
+    {
+        return std::make_shared<IAdd>(rawInst);
+    }
+    if (inst.field.op == 12)
+    {
+        return std::make_shared<IAndImmediate>(rawInst);
+    }
 
     /*switch (inst.field.op)
     {
@@ -59,5 +80,5 @@ IInstruction* IInstruction::MakeInstance(uint32_t rawInst)
         { break; }
     }*/
 
-    return nullptr;
+    return std::make_shared<IDummy>(rawInst);
 }

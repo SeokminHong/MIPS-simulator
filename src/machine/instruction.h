@@ -1,9 +1,10 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include "register.h"
 
-union SInstruction
+union inst_t
 {
     uint32_t raw;
     struct {
@@ -18,13 +19,17 @@ union SInstruction
 
 class IInstruction
 {
+    using inst_ptr = std::shared_ptr<class IInstruction>;
+
 public:
     virtual void Execute() = 0;
 
-    static IInstruction* MakeInstance(uint32_t rawInst);
+    virtual const std::string& GetName() const = 0;
+
+    static inst_ptr MakeInstance(uint32_t rawInst);
 
 protected:
-    IInstruction(uint32_t raw) {}
+    IInstruction(uint32_t raw);
 
-    SInstruction inst;
+    inst_t inst;
 };
