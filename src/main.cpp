@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
         {
             if (source >> line, !source.fail())
             {
-                machine.SetRegister(static_cast<ERegister>(reg), std::stoi(line, 0, 16));
+                machine.SetRegister(static_cast<ERegister>(reg), std::stoul(line, 0, 16));
             }
         }
     }

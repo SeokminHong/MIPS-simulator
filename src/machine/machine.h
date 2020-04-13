@@ -10,7 +10,7 @@
 
 class Machine
 {
-    using inst_ptr = std::shared_ptr<class IInstruction>;
+    using inst_ptr = std::shared_ptr<class IInstructionBase>;
 
 public:
     Machine();
@@ -24,7 +24,7 @@ public:
         maxCycle = newMaxCycle;
     }
 
-    void SetRegister(ERegister regNum, uint32_t regVal);
+    void SetRegister(ERegister reg, uint32_t regVal);
 
     void Run();
 
