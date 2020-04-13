@@ -2,4 +2,6 @@
 /cmake_install.cmake
 /CMakeFiles/
 /Makefile
-/mips-sim
+/MIPS_Simulator
+/.vscode/
+/build/

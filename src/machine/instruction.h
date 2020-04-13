@@ -3,20 +3,28 @@
 #include <string>
 #include "register.h"
 
-class Instruction
+union SInstruction
+{
+    uint32_t raw;
+    struct {
+        uint32_t funct : 6;
+        uint32_t shamt : 5;
+        uint32_t rd : 5;
+        uint32_t rt : 5;
+        uint32_t rs : 5;
+        uint32_t op : 6;
+    } field;
+};
+
+class IInstruction
 {
 public:
     virtual void Execute() = 0;
 
-    static Instruction* MakeInstance(uint32_t rawInst);
+    static IInstruction* MakeInstance(uint32_t rawInst);
 
 protected:
-    Instruction(uint32_t raw) {}
+    IInstruction(uint32_t raw) {}
 
-    // Raw instruction.
-    uint32_t raw = 0;
-
-    ERegister op;
-    int8_t rs;
-    int8_t rt;
+    SInstruction inst;
 };

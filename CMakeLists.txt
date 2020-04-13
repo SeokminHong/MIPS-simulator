@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(MIPS-SIM)
+project(MIPS_Simulator)
 
 add_compile_options(-std=c++14 -g -Wall)
 
@@ -13,4 +13,4 @@ set(SRC_FILES
     src/machine/instruction.cpp
     )
 
-add_executable(mips-sim ${SRC_FILES})
+add_executable(MIPS_Simulator ${SRC_FILES})
