@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(MIPS_Simulator)
 
-add_compile_options(-std=c++14 -g -Wall)
+add_compile_options(-std=c++14 -O2 -g -Wall)
 
 set(CMAKE_C_COMPILER "g++")
 
