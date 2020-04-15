@@ -27,7 +27,6 @@ int main(int argc, char* argv[])
     while (source >> line, !source.fail())
     {
         uint32_t inst = std::stoul(line, 0, 16);
-        printf("%s\tDec: %10u\tHex: %08x\n", line.c_str(), inst, inst);
         machine.AddInstruction(inst);
     }
 
