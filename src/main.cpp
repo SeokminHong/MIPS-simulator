@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
     if (argc < 3)
     {
         puts("Not enough argument to run. Please run with at least two arguments:");
-        puts("MIPS-Simulator (source_file) (cycles) [initial_registers]");
+        puts("./MIPS-Simulator (source_file) (cycles) [initial_registers]");
         return 1;
     }
 
@@ -27,7 +27,6 @@ int main(int argc, char* argv[])
     while (source >> line, !source.fail())
     {
         uint32_t inst = std::stoul(line, 0, 16);
-        printf("%s\tDec: %10u\tHex: %08x\n", line.c_str(), inst, inst);
         machine.AddInstruction(inst);
     }
 
@@ -42,11 +41,11 @@ int main(int argc, char* argv[])
             printf("Cannot open register file: %s", argv[3]);
             return 1;
         }
-        for (int reg; reg < REG_MAX; ++reg)
+        for (ERegister reg = ERegister::zero; reg < ERegister::Max; ++reg)
         {
             if (source >> line, !source.fail())
             {
-                machine.SetRegister(static_cast<ERegister>(reg), std::stoul(line, 0, 16));
+                machine.SetRegister(reg, std::stoul(line, 0, 16));
             }
         }
     }

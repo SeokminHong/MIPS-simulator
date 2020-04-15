@@ -15,7 +15,7 @@ void Machine::AddInstruction(uint32_t instruction)
 
 void Machine::SetRegister(ERegister reg, uint32_t regVal)
 {
-    registers[static_cast<int>(reg)] = regVal;
+    registers[*reg] = regVal;
 }
 
 void Machine::Run()
@@ -81,7 +81,7 @@ void Machine::Cycle()
                 case 8:
                 {
                     // Load PC from $ra.
-                    pc = registers[static_cast<int>(ERegister::ra)];
+                    pc = registers[*ERegister::ra];
                     break;
                 }
                 default:
