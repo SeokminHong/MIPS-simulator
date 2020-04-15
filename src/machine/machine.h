@@ -3,21 +3,17 @@
 #include <string>
 #include <vector>
 #include <array>
-#include <memory>
 #include "register.h"
+#include "instruction.h"
 
 #define MAX_INSTRUCTION 4096
 
 class Machine
 {
-    using inst_ptr = std::shared_ptr<class IInstructionBase>;
-
 public:
     Machine();
 
-    virtual ~Machine() {}
-
-    void AddInstruction(const std::string& instruction);
+    void AddInstruction(uint32_t instruction);
 
     inline void SetMaxCycle(int newMaxCycle)
     {
@@ -35,7 +31,7 @@ private:
 
     std::array<uint32_t, REG_MAX> registers;
 
-    std::vector<inst_ptr> instructions;
+    std::vector<Instruction> instructions;
 
     int maxCycle = 0;
 };
