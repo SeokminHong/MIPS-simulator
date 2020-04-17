@@ -27,6 +27,12 @@ void Machine::Run()
         {
             printf("\n\n");
         }
+        // Is PC indicating out of index.
+        if (instructions.size() < pc / 4)
+        {
+            printf("PC indicating out of index.\n");
+            exit(1);
+        }
         printf("Cycle %d\n", cycle + 1);
         Cycle();
     }
