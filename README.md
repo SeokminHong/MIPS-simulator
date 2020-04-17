@@ -180,7 +180,7 @@ The simulator implements `jr` and `jal` command.
 
 #### Command
 
-    $ ./simulator examples/p1/p1e4.txt 25
+    $ ./simulator examples/p1/p1e4.txt 30
 
 #### Output
 
@@ -284,4 +284,24 @@ The simulator implements `jr` and `jal` command.
     PC: 003C
     Instruction: 23bd0004   # addi $sp, $sp, 4
 
-`fib` function calls `read` and `write` functions very well, but it can't store `$ra` into `$sp` because the `sw` instruction is not implemented. So `fib` function can't return to `loop` label.
+    Cycle 26
+    PC: 0040
+    Instruction: 03e00008   # jr $ra
+
+    Cycle 27
+    PC: 0004
+    Instruction: 20a50001   # addi $a1, $a1, 1
+
+    Cycle 28
+    PC: 0008
+    Instruction: 14a6fffd   # bne $a1, $a2, loop
+
+    Cycle 29
+    PC: 0000
+    Instruction: 0c000004   # jal fib
+
+    Cycle 30
+    PC: 0010
+    Instruction: 23bdfffc   # fib: addi
+
+`fib` function calls `read` and `write` functions very well and it returns to `loop` label when the `jr $ra` instruction executed, cycle 26.

@@ -97,3 +97,23 @@ Instruction: 8fbf0000
 Cycle 25
 PC: 003C
 Instruction: 23bd0004
+
+Cycle 26
+PC: 0040
+Instruction: 03e00008
+
+Cycle 27
+PC: 0004
+Instruction: 20a50001
+
+Cycle 28
+PC: 0008
+Instruction: 14a6fffd
+
+Cycle 29
+PC: 0000
+Instruction: 0c000004
+
+Cycle 30
+PC: 0010
+Instruction: 23bdfffc
