@@ -23,6 +23,10 @@ void Machine::Run()
     pc = 0;
     for (int cycle = 0; cycle < maxCycle; ++cycle)
     {
+        if (cycle > 0)
+        {
+            printf("\n\n");
+        }
         printf("Cycle %d\n", cycle + 1);
         Cycle();
     }
@@ -33,7 +37,7 @@ void Machine::Cycle()
     // Read instruction from instruction memory.
     const Instruction& curInst = instructions[pc / 4];
     inst_t inst = curInst.GetInstruction();
-    printf("PC: %04X\nInstruction: %08X\n\n", pc, curInst.GetRawInst());
+    printf("PC: %04X\nInstruction: %08x", pc, curInst.GetRawInst());
 
     // Increase PC.
     pc += 4;
