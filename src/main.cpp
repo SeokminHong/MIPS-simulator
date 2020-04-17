@@ -9,8 +9,8 @@ int main(int argc, char* argv[])
 
     if (argc < 3)
     {
-        puts("Not enough argument to run. Please run with at least two arguments:");
-        puts("./MIPS-Simulator (source_file) (cycles) [initial_registers]");
+        puts("Not enough arguments to run. Please run with at least two arguments:");
+        puts("./simulator (source_file) (cycles) [initial_registers]");
         return 1;
     }
 

@@ -9,7 +9,7 @@ union inst_t
     // Raw instruction (32bit unsigned)
     uint32_t raw;
 
-    // Immdediate addressing model for unsigned int.
+    // Immediate addressing model for unsigned int.
     struct
     {
         uint32_t immediate : 16;
