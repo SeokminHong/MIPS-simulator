@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <stack>
 #include "register.h"
 #include "instruction.h"
 
@@ -27,11 +28,16 @@ public:
 private:
     void Cycle();
 
-    int pc = 0;
+    uint32_t pc = 0;
 
     std::array<uint32_t, REG_MAX> registers;
 
     std::vector<Instruction> instructions;
+
+    // Only used for the extra challenge of Phase1.
+    // jal: push PC+4 into $ra.
+    // jr: pop PC from $ra.
+    std::stack<uint32_t> ra;
 
     int maxCycle = 0;
 };

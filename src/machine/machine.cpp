@@ -48,17 +48,17 @@ void Machine::Cycle()
         // j
         case 2:
         {
-            // Fill 28 bit into PC.
-            pc = (pc & JUMP_BITMASK) | (inst.direct.address << 2);
+            // Fill lower 28 bits into PC.
+            pc = (pc & JUMP_BITMASK) | (~JUMP_BITMASK & (inst.direct.address << 2));
             break;
         }
         // jal
         case 3:
         {
             // Save PC into $ra
-            SetRegister(ERegister::ra, pc);
-            // Fill 28 bit into PC.
-            pc = (pc & JUMP_BITMASK) | (inst.direct.address << 2);
+            ra.push(pc);
+            // Fill lower 28 bits into PC.
+            pc = (pc & JUMP_BITMASK) | (~JUMP_BITMASK & (inst.direct.address << 2));
             break;
         }
 
@@ -85,7 +85,8 @@ void Machine::Cycle()
                 case 8:
                 {
                     // Load PC from $ra.
-                    pc = registers[*ERegister::ra];
+                    pc = ra.top();
+                    ra.pop();
                     break;
                 }
                 default:
