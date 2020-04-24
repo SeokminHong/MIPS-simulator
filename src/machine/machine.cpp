@@ -53,7 +53,7 @@ void Machine::IF()
     ALU(EALU_add, pc, 4u, if_id.pc);
     mux_pc.SetFalseValue(if_id.pc);
 
-    volatile uint32_t rawInst = 0;
+    uint32_t rawInst = 0;
     // Read instruction from instruction memory.
     if (instructions.size() < pc / 4)
     {
