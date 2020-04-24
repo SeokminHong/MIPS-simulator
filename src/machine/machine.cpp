@@ -104,10 +104,12 @@ void Machine::MEM()
     if (ex_mem.m.memWrite)
     {
         *(uint32_t*)(memory + ex_mem.aluResult) = ex_mem.rt;
+        printf("Memory %08x is written: %x\n", ex_mem.aluResult, ex_mem.rt);
     }
     if (ex_mem.m.memRead)
     {
         mem_wb.readData = *(uint32_t*)(memory + ex_mem.aluResult);
+        printf("Memory %08x is loaded: %x\n", ex_mem.aluResult, mem_wb.readData);
     }
     mem_wb.aluResult = ex_mem.aluResult;
 }
