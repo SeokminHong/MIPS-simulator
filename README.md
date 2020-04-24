@@ -6,11 +6,20 @@
 
 ## Run
 
-    $ ./simulator {Program_binary} {Number_of_cycles} [Initial_register_state]
+    $ ./simulator {Program_binary} {Number_of_cycles} {Mode} [Initial_register_state]
+
+- Mode 0
+
+    Supports pipelining without data forwarding or hazard detection. Internal forwarding of the register is supported.
+
+- Mode 1
+
+    Supports data forwarding and hazard detection in addition to Mode 0.
+
 
 Example:
 
-    $ ./simulator examples/p1/p1e1.txt 10 init.txt
+    $ ./simulator examples/p1/p1e1.txt 10 0 init.txt
 
 ## Test
 

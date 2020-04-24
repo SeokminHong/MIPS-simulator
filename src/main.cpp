@@ -29,13 +29,14 @@ int main(int argc, char* argv[])
         uint32_t inst = std::stoul(line, 0, 16);
         machine.AddInstruction(inst);
     }
+    source.close();
 
     machine.SetMaxCycle(atoi(argv[2]));
+    machine.SetMode(atoi(argv[3]));
 
-    source.close();
-    if (argc >= 4)
+    if (argc >= 5)
     {
-        source.open(argv[2]);
+        source.open(argv[4]);
         if (source.fail())
         {
             printf("Cannot open register file: %s\n", argv[3]);

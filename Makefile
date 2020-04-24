@@ -1,5 +1,5 @@
 TARGET = simulator
-SOURCES = src/main.cpp src/machine/instruction.cpp src/machine/machine.cpp
+SOURCES = src/main.cpp src/machine/instruction.cpp src/machine/machine.cpp src/machine/units.cpp
 ASSEMBLER = assembler
 ASSEMBLEDIR = ./examples/p2
 
