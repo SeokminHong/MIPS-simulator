@@ -33,12 +33,6 @@ void Machine::Run()
         {
             printf("\n");
         }
-        // Is PC indicating out of index.
-        if (instructions.size() < pc / 4)
-        {
-            printf("PC indicating out of index.\n");
-            exit(1);
-        }
         printf("Cycle %d\n", cycle + 1);
         Cycle();
     }
@@ -59,20 +53,25 @@ void Machine::IF()
     ALU(EALU_add, pc, 4u, if_id.pc);
     mux_pc.SetFalseValue(if_id.pc);
 
+    volatile uint32_t rawInst = 0;
     // Read instruction from instruction memory.
-    if_id.curInst = &instructions[pc / 4];
-    volatile uint32_t rawInst = if_id.curInst->GetRawInst();
+    if (instructions.size() < pc / 4)
+    {
+        if_id.curInst = nullptr;
+    }
+    else
+    {
+        if_id.curInst = &instructions[pc / 4];
+        rawInst = if_id.curInst->GetRawInst();
+    }
+    
     printf("PC: %04X\nInstruction: %08x\n", pc, rawInst);
 }
 
 void Machine::ID()
 {
     Instruction const* curInst = if_id.curInst;
-    if (!curInst)
-    {
-        return;
-    }
-    inst_t inst = curInst->GetInstruction();
+    inst_t inst = curInst ? curInst->GetInstruction() : inst_t{0};
     auto control = Control(inst);
     id_ex.ex = std::get<0>(control);
     id_ex.m = std::get<1>(control);
@@ -80,8 +79,8 @@ void Machine::ID()
     id_ex.rd0 = inst.reg.rt;
     id_ex.rd1 = inst.reg.rd;
     
-    id_ex.rs = inst.base.rs;
-    id_ex.rt = inst.base.rt;
+    id_ex.rs = registers[inst.base.rs];
+    id_ex.rt = registers[inst.base.rt];
 
     /*switch (curInst->GetOpCode())
     {
@@ -165,17 +164,19 @@ void Machine::EX()
     ex_mem.m = id_ex.m;
     ex_mem.wb = id_ex.wb;
     ALU(EALU_add, (int32_t)id_ex.pc, id_ex.address << 2, (int32_t&)ex_mem.pc);
-    Multiplexer<int32_t> mux_aluSrc{ (int32_t)id_ex.rt, id_ex.address };
+    Multiplexer<int32_t> mux_aluSrc{ id_ex.address, (int32_t)id_ex.rt };
     EALU control = GetALUControl(id_ex.ex.aluOP1, id_ex.ex.aluOP0, id_ex.address & 63);
     ex_mem.zero = ALU(control, (int32_t)id_ex.rs, mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.aluResult);
     ex_mem.rt = id_ex.rt;
-    Multiplexer<uint32_t> mux_rd{id_ex.rd0, id_ex.rd1};
+    Multiplexer<uint32_t> mux_rd{id_ex.rd1, id_ex.rd0};
     ex_mem.rd = mux_rd.GetValue(id_ex.ex.regDst);
 }
 
 void Machine::MEM()
 {
     pc = mux_pc.GetValue(ex_mem.zero && ex_mem.m.branch);
+    mem_wb.wb = ex_mem.wb;
+    mem_wb.rd = ex_mem.rd;
     if (ex_mem.m.memWrite)
     {
         *(uint32_t*)(memory + ex_mem.aluResult) = ex_mem.rt;

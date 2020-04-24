@@ -3,9 +3,14 @@
 
 std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
 {
-    ctrl_EX ex;
-    ctrl_M m;
-    ctrl_WB wb;
+    ctrl_EX ex{};
+    ctrl_M m{};
+    ctrl_WB wb{};
+    
+    if (inst.raw == 0)
+    {
+        return std::tie(ex, m, wb);
+    }
     
     switch (inst.base.op)
     {
@@ -26,6 +31,7 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
         // beq
         case 4:
         {
+            ex.regDst = 0;
             ex.aluOP1 = 0;
             ex.aluOP0 = 1;
             ex.aluSrc = 0;
@@ -33,6 +39,7 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
             m.memRead = 0;
             m.memWrite = 0;
             wb.regWrite = 0;
+            wb.memtoReg = 0;
             break;
         }
         // lw
@@ -52,6 +59,7 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
         // sw
         case 43:
         {
+            ex.regDst = 0;
             ex.aluOP1 = 0;
             ex.aluOP0 = 0;
             ex.aluSrc = 1;
@@ -59,6 +67,7 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
             m.memRead = 0;
             m.memWrite = 1;
             wb.regWrite = 0;
+            wb.memtoReg = 0;
             break;
         }
     }
