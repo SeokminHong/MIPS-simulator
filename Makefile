@@ -2,9 +2,10 @@ TARGET = simulator
 SOURCES = src/main.cpp src/machine/instruction.cpp src/machine/machine.cpp src/machine/units.cpp
 ASSEMBLER = assembler
 ASSEMBLEDIR = ./examples/p2
+MAKEREGISTER = make-register
 
 $(TARGET): $(SOURCES)
-	g++ -std=c++1y -o $(TARGET) -O2 -Wall $(SOURCES)
+	g++ -std=c++1y -g -o $(TARGET) -O2 -Wall $(SOURCES)
 
 test1: $(TARGET)
 	./$(TARGET) examples/p1/p1e1.txt 5 > output/p1/out-p1e1.txt && diff examples/p1/p1e1-output.txt output/p1/out-p1e1.txt
@@ -28,3 +29,5 @@ assemble:
 		./$(ASSEMBLER) $${file}; \
 	done
 	
+register:
+	g++ -std=c++1y -o $(MAKEREGISTER) -O2 -Wall $(MAKEREGISTER).cpp

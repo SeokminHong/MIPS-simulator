@@ -20,25 +20,9 @@ enum class ERegister : uint8_t
     Max
 };
 
-static constexpr uint8_t operator*(ERegister reg)
+inline static constexpr uint8_t operator*(ERegister reg)
 {
     return static_cast<uint8_t>(reg);
-}
-static constexpr ERegister operator++(ERegister reg)
-{
-    return static_cast<ERegister>(*reg + 1);
-}
-static constexpr ERegister operator++(ERegister reg, int)
-{
-    return ++reg;
-}
-static constexpr ERegister operator--(ERegister reg)
-{
-    return static_cast<ERegister>(*reg - 1);
-}
-static constexpr ERegister operator--(ERegister reg, int)
-{
-    return --reg;
 }
 
 static constexpr int REG_MAX = static_cast<int>(ERegister::Max);

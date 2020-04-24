@@ -29,8 +29,8 @@ public:
     }
 
 private:
-    T trueValue;
-    T falseValue;
+    T trueValue = 0;
+    T falseValue = 0;
 };
 
 struct ctrl_EX

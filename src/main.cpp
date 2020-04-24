@@ -9,8 +9,8 @@ int main(int argc, char* argv[])
 
     if (argc < 3)
     {
-        puts("Not enough arguments to run. Please run with at least two arguments:\n");
-        puts("./simulator (source_file) (cycles) [initial_registers]\n");
+        puts("Not enough arguments to run. Please run with at least three arguments:\n");
+        puts("./simulator (source_file) (cycles) (Mode) [initial_registers]\n");
         return 1;
     }
 
@@ -42,14 +42,13 @@ int main(int argc, char* argv[])
             printf("Cannot open register file: %s\n", argv[3]);
             return 1;
         }
-        for (ERegister reg = ERegister::zero; reg < ERegister::Max; ++reg)
+        for (int reg = *ERegister::zero; reg < *ERegister::Max; ++reg)
         {
             if (source >> line, !source.fail())
             {
-                machine.SetRegister(reg, std::stoul(line, 0, 16));
+                machine.SetRegister(static_cast<ERegister>(reg), std::stoul(line, 0, 16));
             }
         }
     }
-
     machine.Run();
 }

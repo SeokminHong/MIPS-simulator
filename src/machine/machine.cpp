@@ -1,4 +1,5 @@
 #include "machine.h"
+#include <cstring>
 
 #define JUMP_BITMASK (15u << 28)
 
@@ -6,6 +7,11 @@ Machine::Machine()
 {
     registers.fill(0u);
     instructions.reserve(MAX_INSTRUCTION);
+    memset(memory, 0, MAX_MEMORY);
+    memset(&if_id, 0, sizeof(if_id));
+    memset(&id_ex, 0, sizeof(id_ex));
+    memset(&ex_mem, 0, sizeof(ex_mem));
+    memset(&mem_wb, 0, sizeof(mem_wb));
 }
 
 void Machine::AddInstruction(uint32_t instruction)
@@ -55,12 +61,17 @@ void Machine::IF()
 
     // Read instruction from instruction memory.
     if_id.curInst = &instructions[pc / 4];
-    printf("PC: %04X\nInstruction: %08x\n", pc, if_id.curInst->GetRawInst());
+    volatile uint32_t rawInst = if_id.curInst->GetRawInst();
+    printf("PC: %04X\nInstruction: %08x\n", pc, rawInst);
 }
 
 void Machine::ID()
 {
     Instruction const* curInst = if_id.curInst;
+    if (!curInst)
+    {
+        return;
+    }
     inst_t inst = curInst->GetInstruction();
     auto control = Control(inst);
     id_ex.ex = std::get<0>(control);
@@ -183,5 +194,6 @@ void Machine::WB()
     if (mem_wb.wb.regWrite)
     {
         registers[mem_wb.rd] = value;
+        printf("Regster %d written: %x\n", mem_wb.rd, value);
     }
 }
