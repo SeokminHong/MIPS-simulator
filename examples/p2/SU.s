@@ -1,0 +1,11 @@
+;; SU (signed vs unsigned)
+
+lui     $s0, 0xffff
+ori     $s0, $s0, 0xffff
+ori     $s1, $0, 0x0001
+slt     $t0, $s0, $s1
+sltu    $t1, $s0, $s1
+end:
+b       end
+
+;; \xff\xff\x10\x3c\xff\xff\x10\x36\x01\x00\x11\x34\x2a\x40\x11\x02\x2b\x48\x11\x02\xff\xff\x00\x10\x00\x00\x00\x00

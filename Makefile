@@ -1,5 +1,7 @@
 TARGET = simulator
 SOURCES = src/main.cpp src/machine/instruction.cpp src/machine/machine.cpp
+ASSEMBLER = assembler
+ASSEMBLEDIR = ./examples/p2
 
 $(TARGET): $(SOURCES)
 	g++ -std=c++1y -o $(TARGET) -O2 -Wall $(SOURCES)
@@ -18,3 +20,11 @@ test4: $(TARGET)
 
 
 test: test1 test2 test3 test4 
+
+assemble:
+	g++ -std=c++1y -o $(ASSEMBLER) -O2 -Wall $(ASSEMBLER).cpp
+	
+	for file in $(wildcard $(ASSEMBLEDIR)/*.s) ; do \
+		./$(ASSEMBLER) $${file}; \
+	done
+	

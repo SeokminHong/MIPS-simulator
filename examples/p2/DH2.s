@@ -1,0 +1,8 @@
+;; DH2
+
+lw      $s0, 20($t1)
+sub     $t2, $s0, $t3
+end:
+b       end
+
+;; \x14\x00\x30\x8d\x22\x50\x0b\x02\xff\xff\x00\x10\x00\x00\x00\x00

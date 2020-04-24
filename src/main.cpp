@@ -9,8 +9,8 @@ int main(int argc, char* argv[])
 
     if (argc < 3)
     {
-        puts("Not enough arguments to run. Please run with at least two arguments:");
-        puts("./simulator (source_file) (cycles) [initial_registers]");
+        puts("Not enough arguments to run. Please run with at least two arguments:\n");
+        puts("./simulator (source_file) (cycles) [initial_registers]\n");
         return 1;
     }
 
@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     source.open(argv[1]);
     if (source.fail())
     {
-        printf("Cannot open source file: %s", argv[1]);
+        printf("Cannot open source file: %s\n", argv[1]);
         return 1;
     }
 
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
         source.open(argv[2]);
         if (source.fail())
         {
-            printf("Cannot open register file: %s", argv[3]);
+            printf("Cannot open register file: %s\n", argv[3]);
             return 1;
         }
         for (ERegister reg = ERegister::zero; reg < ERegister::Max; ++reg)
