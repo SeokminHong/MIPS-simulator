@@ -86,13 +86,27 @@ int main(int argc, char* argv[])
         if (it != regMap.end())
         {
             printf("regName: %s, regIndex: %d, regVal: %x\n", regName.c_str(), it->second, regVal);
+            regArr[it->second] = regVal;
+        }
+        else if (regName[0] == 'r')
+        {
+            int regIndex = stoi(regName.substr(1));
+            if (regIndex < 32)
+            {
+                printf("regName: %s, regIndex: %d, regVal: %x\n", regName.c_str(), regIndex, regVal);
+                regArr[regIndex] = regVal;
+            }
+            else
+            {
+                printf("Cannot find register %s.\n", regName.c_str());
+                return 1;
+            }
         }
         else
         {
             printf("Cannot find register %s.\n", regName.c_str());
             return 1;
         }
-        regArr[it->second] = regVal;
     }
     
     for (int i = 0; i < 32; ++i)
