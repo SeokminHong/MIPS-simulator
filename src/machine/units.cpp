@@ -73,3 +73,29 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
     }
     return std::tie(ex, m, wb);
 }
+
+int Forward::GetA() const
+{
+    if (id_ex_rs == ex_mem_rd)
+    {
+        return 2;
+    }
+    if (id_ex_rs == mem_wb_rd)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int Forward::GetB() const
+{
+    if (id_ex_rt == ex_mem_rd)
+    {
+        return 2;
+    }
+    if (id_ex_rt == mem_wb_rd)
+    {
+        return 1;
+    }
+    return 0;
+}

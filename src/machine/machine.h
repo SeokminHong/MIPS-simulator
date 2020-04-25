@@ -59,11 +59,10 @@ private:
         pc_t pc;
         int32_t rs_val;
         int32_t rt_val;
+        int32_t address;
         
         uint32_t rd0 : 5;
         uint32_t rd1 : 5;
-        
-        int32_t address;
         
         // Forwarding unit inputs.
         uint32_t rs : 5;
@@ -78,9 +77,13 @@ private:
     struct {
         pc_t pc;
         int32_t aluResult;
-        uint32_t zero : 1;
         int32_t rt_val;
-        int32_t rd;
+
+        uint32_t zero : 1;
+        // Forwarding unit inputs.
+        uint32_t rd : 5;
+        
+        // Control signals.
         ctrl_M m;
         ctrl_WB wb;
     } ex_mem;
@@ -88,7 +91,11 @@ private:
     struct {
         uint32_t readData;
         uint32_t aluResult;
-        int32_t rd;
+        
+        // Forwarding unit inputs.
+        uint32_t rd : 5;
+        
+        // Control signals.
         ctrl_WB wb;
     } mem_wb;
 
@@ -101,6 +108,12 @@ private:
 
     int maxCycle = 0;
     int mode = 0;
+
+    // Forwarding multiplexer
+    Multiplexer<int32_t, 3> mux_fwd0;
+    Multiplexer<int32_t, 3> mux_fwd1;
+
+    Forward forwarding;
 
     char outputBuffer[100] = {};
 };

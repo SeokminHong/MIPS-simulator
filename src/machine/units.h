@@ -52,9 +52,13 @@ private:
 class Forward
 {
 public:
+    int GetA() const;
+    int GetB() const;
 
-private:
-    
+    uint32_t id_ex_rs : 5;
+    uint32_t id_ex_rt : 5;
+    uint32_t ex_mem_rd : 5;
+    uint32_t mem_wb_rd : 5;
 };
 
 struct ctrl_EX

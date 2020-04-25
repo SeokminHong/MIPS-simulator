@@ -101,9 +101,19 @@ void Machine::EX()
     ex_mem.m = id_ex.m;
     ex_mem.wb = id_ex.wb;
     ALU(EALU_add, (int32_t)id_ex.pc, id_ex.address << 2, (int32_t&)ex_mem.pc);
-    Multiplexer<int32_t> mux_aluSrc{ (int32_t)id_ex.rt_val, id_ex.address };
+
+    mux_fwd0.SetValue(0, (int32_t)id_ex.rs_val);
+    mux_fwd1.SetValue(0, (int32_t)id_ex.rt_val);
+
+    forwarding.id_ex_rs = id_ex.rs;
+    forwarding.id_ex_rt = id_ex.rt;
+    
+    Multiplexer<int32_t> mux_aluSrc{ mux_fwd1.GetValue(forwarding.GetB()), id_ex.address };
+
+    //Multiplexer<int32_t> mux_aluSrc{ (int32_t)id_ex.rt_val, id_ex.address };
     EALU control = GetALUControl(id_ex.ex.aluOP1, id_ex.ex.aluOP0, id_ex.address & 63);
-    ex_mem.zero = ALU(control, (int32_t)id_ex.rs_val, mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.aluResult);
+    //ex_mem.zero = ALU(control, (int32_t)id_ex.rs_val, mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.aluResult);
+    ex_mem.zero = ALU(control, mux_fwd0.GetValue(forwarding.GetA()), mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.aluResult);
     ex_mem.rt_val = id_ex.rt_val;
     Multiplexer<uint32_t> mux_rd{ id_ex.rd0, id_ex.rd1 };
     ex_mem.rd = mux_rd.GetValue(id_ex.ex.regDst);
@@ -114,6 +124,10 @@ void Machine::MEM()
     pc = mux_pc.GetValue(ex_mem.zero && ex_mem.m.branch);
     mem_wb.wb = ex_mem.wb;
     mem_wb.rd = ex_mem.rd;
+    
+    mux_fwd0.SetValue(2, ex_mem.aluResult);
+    mux_fwd1.SetValue(2, ex_mem.aluResult);
+    forwarding.ex_mem_rd = ex_mem.rd;
 
     int bytes = 4;
     if (ex_mem.m.memWrite)
@@ -141,6 +155,11 @@ void Machine::WB()
 {
     Multiplexer<uint32_t> mux_memtoReg{ mem_wb.aluResult, mem_wb.readData };
     uint32_t value = mux_memtoReg.GetValue(mem_wb.wb.memtoReg);
+    
+    mux_fwd0.SetValue(1, value);
+    mux_fwd1.SetValue(1, value);
+    forwarding.mem_wb_rd = mem_wb.rd;
+
     if (mem_wb.wb.regWrite)
     {
         registers[mem_wb.rd] = value;
