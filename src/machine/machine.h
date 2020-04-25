@@ -59,9 +59,17 @@ private:
         pc_t pc;
         int32_t rs_val;
         int32_t rt_val;
+        
         uint32_t rd0 : 5;
         uint32_t rd1 : 5;
+        
         int32_t address;
+        
+        // Forwarding unit inputs.
+        uint32_t rs : 5;
+        uint32_t rt : 5;
+
+        // Control signals.
         ctrl_EX ex;
         ctrl_M m;
         ctrl_WB wb;

@@ -60,7 +60,7 @@ void Machine::IF()
 {
     // Increase PC.
     ALU(EALU_add, pc, 4u, if_id.pc);
-    mux_pc.SetFalseValue(if_id.pc);
+    mux_pc.SetValue(0, if_id.pc);
 
     uint32_t rawInst = 0;
     // Read instruction from instruction memory.
@@ -91,6 +91,9 @@ void Machine::ID()
     
     id_ex.rs_val = registers[inst.base.rs];
     id_ex.rt_val = registers[inst.base.rt];
+
+    id_ex.rs = inst.base.rs;
+    id_ex.rt = inst.base.rt;
 }
 
 void Machine::EX()
@@ -98,11 +101,11 @@ void Machine::EX()
     ex_mem.m = id_ex.m;
     ex_mem.wb = id_ex.wb;
     ALU(EALU_add, (int32_t)id_ex.pc, id_ex.address << 2, (int32_t&)ex_mem.pc);
-    Multiplexer<int32_t> mux_aluSrc{ id_ex.address, (int32_t)id_ex.rt_val };
+    Multiplexer<int32_t> mux_aluSrc{ (int32_t)id_ex.rt_val, id_ex.address };
     EALU control = GetALUControl(id_ex.ex.aluOP1, id_ex.ex.aluOP0, id_ex.address & 63);
     ex_mem.zero = ALU(control, (int32_t)id_ex.rs_val, mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.aluResult);
     ex_mem.rt_val = id_ex.rt_val;
-    Multiplexer<uint32_t> mux_rd{id_ex.rd1, id_ex.rd0};
+    Multiplexer<uint32_t> mux_rd{ id_ex.rd0, id_ex.rd1 };
     ex_mem.rd = mux_rd.GetValue(id_ex.ex.regDst);
 }
 
@@ -136,7 +139,7 @@ void Machine::MEM()
 
 void Machine::WB()
 {
-    Multiplexer<uint32_t> mux_memtoReg{ mem_wb.readData, mem_wb.aluResult };
+    Multiplexer<uint32_t> mux_memtoReg{ mem_wb.aluResult, mem_wb.readData };
     uint32_t value = mux_memtoReg.GetValue(mem_wb.wb.memtoReg);
     if (mem_wb.wb.regWrite)
     {

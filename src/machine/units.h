@@ -2,35 +2,51 @@
 
 #include <tuple>
 
-template <typename T>
+template <typename T, int N = 2>
 class Multiplexer
 {
+private:
+    struct internal_size
+    {
+        constexpr internal_size(int n) : size(n) {}
+        int size;
+        constexpr inline operator int()
+        {
+            return size;
+        }
+    };
+
+    Multiplexer(internal_size n)
+    {}
+
+    template<typename... Targs>
+    Multiplexer(internal_size n, T value, Targs... args) :
+        Multiplexer(internal_size(n - 1), args...)
+    {
+        values[N - n] = value;
+    }
+
 public:
     Multiplexer()
     {}
 
-    Multiplexer(const T& _trueValue, const T& _falseValue) :
-        trueValue(_trueValue), falseValue(_falseValue)
+    template<typename... Targs>
+    Multiplexer(Targs... args) :
+        Multiplexer(internal_size(N), args...)
     {}
 
-    inline T GetValue(bool isTrue)
+    inline T GetValue(int index) const
     {
-        return isTrue ? trueValue : falseValue;
+        return values[index];
     }
 
-    inline void SetTrueValue(const T& value)
+    inline void SetValue(int index, const T& value)
     {
-        trueValue = value;
-    }
-
-    inline void SetFalseValue(const T& value)
-    {
-        falseValue = value;
+        values[index] = value;
     }
 
 private:
-    T trueValue = 0;
-    T falseValue = 0;
+    T values[N]{};
 };
 
 class Forward
