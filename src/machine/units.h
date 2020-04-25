@@ -35,7 +35,10 @@ private:
 
 class Forward
 {
+public:
 
+private:
+    
 };
 
 struct ctrl_EX

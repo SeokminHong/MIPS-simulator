@@ -57,8 +57,8 @@ private:
 
     struct {
         pc_t pc;
-        int32_t rs;
-        int32_t rt;
+        int32_t rs_val;
+        int32_t rt_val;
         uint32_t rd0 : 5;
         uint32_t rd1 : 5;
         int32_t address;
@@ -71,7 +71,7 @@ private:
         pc_t pc;
         int32_t aluResult;
         uint32_t zero : 1;
-        int32_t rt;
+        int32_t rt_val;
         int32_t rd;
         ctrl_M m;
         ctrl_WB wb;

@@ -89,8 +89,8 @@ void Machine::ID()
     id_ex.rd1 = inst.reg.rd;
     id_ex.address = inst.base.address;
     
-    id_ex.rs = registers[inst.base.rs];
-    id_ex.rt = registers[inst.base.rt];
+    id_ex.rs_val = registers[inst.base.rs];
+    id_ex.rt_val = registers[inst.base.rt];
 }
 
 void Machine::EX()
@@ -98,10 +98,10 @@ void Machine::EX()
     ex_mem.m = id_ex.m;
     ex_mem.wb = id_ex.wb;
     ALU(EALU_add, (int32_t)id_ex.pc, id_ex.address << 2, (int32_t&)ex_mem.pc);
-    Multiplexer<int32_t> mux_aluSrc{ id_ex.address, (int32_t)id_ex.rt };
+    Multiplexer<int32_t> mux_aluSrc{ id_ex.address, (int32_t)id_ex.rt_val };
     EALU control = GetALUControl(id_ex.ex.aluOP1, id_ex.ex.aluOP0, id_ex.address & 63);
-    ex_mem.zero = ALU(control, (int32_t)id_ex.rs, mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.aluResult);
-    ex_mem.rt = id_ex.rt;
+    ex_mem.zero = ALU(control, (int32_t)id_ex.rs_val, mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.aluResult);
+    ex_mem.rt_val = id_ex.rt_val;
     Multiplexer<uint32_t> mux_rd{id_ex.rd1, id_ex.rd0};
     ex_mem.rd = mux_rd.GetValue(id_ex.ex.regDst);
 }
@@ -115,10 +115,10 @@ void Machine::MEM()
     int bytes = 4;
     if (ex_mem.m.memWrite)
     {
-        *(uint32_t*)(memory + ex_mem.aluResult) = ex_mem.rt;
+        *(uint32_t*)(memory + ex_mem.aluResult) = ex_mem.rt_val;
         std::string formatStr = "W %d %04x %04x";
         formatStr[12] = bytes + '0';
-        sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, ex_mem.rt);
+        sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, ex_mem.rt_val);
     }
     else if (ex_mem.m.memRead)
     {
