@@ -57,8 +57,8 @@ private:
 
     struct {
         pc_t pc;
-        uint32_t rs : 5;
-        uint32_t rt : 5;
+        int32_t rs;
+        int32_t rt;
         uint32_t rd0 : 5;
         uint32_t rd1 : 5;
         int32_t address;
@@ -71,8 +71,8 @@ private:
         pc_t pc;
         int32_t aluResult;
         uint32_t zero : 1;
-        uint32_t rt : 5;
-        uint32_t rd : 5;
+        int32_t rt;
+        int32_t rd;
         ctrl_M m;
         ctrl_WB wb;
     } ex_mem;
@@ -80,7 +80,7 @@ private:
     struct {
         uint32_t readData;
         uint32_t aluResult;
-        uint32_t rd : 5;
+        int32_t rd;
         ctrl_WB wb;
     } mem_wb;
 

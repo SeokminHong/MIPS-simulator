@@ -33,6 +33,11 @@ private:
     T falseValue = 0;
 };
 
+class Forward
+{
+
+};
+
 struct ctrl_EX
 {
     uint8_t regDst : 1;

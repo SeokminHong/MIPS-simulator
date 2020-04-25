@@ -116,15 +116,15 @@ void Machine::MEM()
     if (ex_mem.m.memWrite)
     {
         *(uint32_t*)(memory + ex_mem.aluResult) = ex_mem.rt;
-        std::string formatStr = "W %d %04x %04d";
-        formatStr[12] = bytes + '\0';
+        std::string formatStr = "W %d %04x %04x";
+        formatStr[12] = bytes + '0';
         sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, ex_mem.rt);
     }
     else if (ex_mem.m.memRead)
     {
         mem_wb.readData = *(uint32_t*)(memory + ex_mem.aluResult);
-        std::string formatStr = "R %d %04x %04d";
-        formatStr[12] = bytes + '\0';
+        std::string formatStr = "R %d %04x %04x";
+        formatStr[12] = bytes + '0';
         sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, mem_wb.readData);
     }
     else
