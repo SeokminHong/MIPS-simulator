@@ -45,6 +45,15 @@ void Machine::Cycle()
     EX();
     ID();
     IF();
+
+    // Print registers' states.
+    puts("Registers:");
+    for (int i = 0; i < REG_MAX; ++i)
+    {
+        printf("[%d] %08x\n", i, registers[i]);
+    }
+    // Print memory I/O.
+    printf("Memory I/O: %s\n", outputBuffer);
 }
 
 void Machine::IF()
@@ -101,15 +110,25 @@ void Machine::MEM()
     pc = mux_pc.GetValue(ex_mem.zero && ex_mem.m.branch);
     mem_wb.wb = ex_mem.wb;
     mem_wb.rd = ex_mem.rd;
+
+    int bytes = 4;
     if (ex_mem.m.memWrite)
     {
         *(uint32_t*)(memory + ex_mem.aluResult) = ex_mem.rt;
-        printf("Memory %08x is written: %x\n", ex_mem.aluResult, ex_mem.rt);
+        std::string formatStr = "W %d %04x %04d";
+        formatStr[12] = bytes + '\0';
+        sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, ex_mem.rt);
     }
-    if (ex_mem.m.memRead)
+    else if (ex_mem.m.memRead)
     {
         mem_wb.readData = *(uint32_t*)(memory + ex_mem.aluResult);
-        printf("Memory %08x is loaded: %x\n", ex_mem.aluResult, mem_wb.readData);
+        std::string formatStr = "R %d %04x %04d";
+        formatStr[12] = bytes + '\0';
+        sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, mem_wb.readData);
+    }
+    else
+    {
+        outputBuffer[0] = '\0';
     }
     mem_wb.aluResult = ex_mem.aluResult;
 }
@@ -121,6 +140,5 @@ void Machine::WB()
     if (mem_wb.wb.regWrite)
     {
         registers[mem_wb.rd] = value;
-        printf("Regster %d written: %x\n", mem_wb.rd, value);
     }
 }

@@ -93,4 +93,6 @@ private:
 
     int maxCycle = 0;
     int mode = 0;
+
+    char outputBuffer[100] = {};
 };
