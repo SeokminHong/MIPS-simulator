@@ -87,6 +87,7 @@ void Machine::ID()
     id_ex.wb = std::get<2>(control);
     id_ex.rd0 = inst.reg.rt;
     id_ex.rd1 = inst.reg.rd;
+    id_ex.address = inst.base.address;
     
     id_ex.rs = registers[inst.base.rs];
     id_ex.rt = registers[inst.base.rt];
