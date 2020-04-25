@@ -9,7 +9,7 @@
 #include "units.h"
 
 #define MAX_INSTRUCTION 4096
-#define MAX_MEMORY 65536 // FIXME
+#define MAX_MEMORY 65536
 
 using pc_t = uint32_t;
 
