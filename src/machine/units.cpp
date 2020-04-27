@@ -1,6 +1,14 @@
 #include "units.h"
 #include "instruction.h"
 
+void PC::TryWrite(pc_t newPC)
+{
+    if (pcWrite)
+    {
+        pc = newPC;
+    }
+}
+
 std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
 {
     ctrl_EX ex{};

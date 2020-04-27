@@ -11,8 +11,6 @@
 #define MAX_INSTRUCTION 4096
 #define MAX_MEMORY 65536
 
-using pc_t = uint32_t;
-
 class Machine
 {
 public:
@@ -43,7 +41,7 @@ private:
     void MEM();
     void WB();
 
-    pc_t pc = 0;
+    PC pc;
 
     std::array<uint32_t, REG_MAX> registers;
     char memory[MAX_MEMORY];

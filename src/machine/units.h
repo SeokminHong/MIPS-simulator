@@ -2,6 +2,34 @@
 
 #include <tuple>
 
+using pc_t = uint32_t;
+
+class PC
+{
+public:
+    inline operator pc_t() const
+    {
+        return pc;
+    }
+
+    inline pc_t GetPC() const
+    {
+        return pc;
+    }
+
+    void TryWrite(pc_t newPC);
+
+    inline void SetPCWrite(bool newPCWrite)
+    {
+        pcWrite = newPCWrite;
+    }
+
+private:
+    pc_t pc;
+
+    bool pcWrite = true;
+};
+
 template <typename T, int N = 2>
 class Multiplexer
 {
@@ -59,6 +87,12 @@ public:
     uint32_t id_ex_rt : 5;
     uint32_t ex_mem_rd : 5;
     uint32_t mem_wb_rd : 5;
+};
+
+class HazardDetector
+{
+public:
+
 };
 
 struct ctrl_EX

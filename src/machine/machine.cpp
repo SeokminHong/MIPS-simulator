@@ -26,7 +26,8 @@ void Machine::SetRegister(ERegister reg, uint32_t regVal)
 
 void Machine::Run()
 {
-    pc = 0;
+    pc.SetPCWrite(true);
+    pc.TryWrite(0);
     for (int cycle = 0; cycle < maxCycle; ++cycle)
     {
         if (cycle > 0)
@@ -74,7 +75,7 @@ void Machine::IF()
         rawInst = if_id.curInst->GetRawInst();
     }
     
-    printf("PC: %04X\nInstruction: %08x\n", pc, rawInst);
+    printf("PC: %04X\nInstruction: %08x\n", pc.GetPC(), rawInst);
 }
 
 void Machine::ID()
@@ -121,7 +122,7 @@ void Machine::EX()
 
 void Machine::MEM()
 {
-    pc = mux_pc.GetValue(ex_mem.zero && ex_mem.m.branch);
+    pc.TryWrite(mux_pc.GetValue(ex_mem.zero && ex_mem.m.branch));
     mem_wb.wb = ex_mem.wb;
     mem_wb.rd = ex_mem.rd;
     
