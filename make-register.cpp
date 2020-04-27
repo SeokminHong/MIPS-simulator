@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
             printf("regName: %s, regIndex: %d, regVal: %x\n", regName.c_str(), it->second, regVal);
             regArr[it->second] = regVal;
         }
-        else if (regName[0] == 'r')
+        else if ((regName[0] | 32) == 'r')
         {
             int regIndex = stoi(regName.substr(1));
             if (regIndex < 32)
