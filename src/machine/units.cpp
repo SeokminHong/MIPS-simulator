@@ -79,7 +79,7 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
             break;
         }
     }
-    return std::tie(ex, m, wb);
+    return std::make_tuple(std::move(ex), std::move(m), std::move(wb));
 }
 
 int Forward::GetA() const
