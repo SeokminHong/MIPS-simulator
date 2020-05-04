@@ -17,7 +17,7 @@ fi
 
 # Run mode 0
 echo "./${PROGRAM} ${TESTDIR}/$1-code.txt ${COUNT} 0 ${REG} > ${OUTPUTDIR}/$1-out0.txt"
-#./${PROGRAM} ${TESTDIR}/$1-code.txt ${COUNT} 0 ${REG} > ${OUTPUTDIR}/$1-out0.txt
+./${PROGRAM} ${TESTDIR}/$1-code.txt ${COUNT} 0 ${REG} > ${OUTPUTDIR}/$1-out0.txt
 echo diff ${TESTDIR}/$1-out0.txt ${OUTPUTDIR}/$1-out0.txt -B -u
 
 # Run mode 1

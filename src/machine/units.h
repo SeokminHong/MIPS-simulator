@@ -95,6 +95,36 @@ public:
 
 };
 
+enum class EMemoryRW : uint8_t
+{
+    byte, ubyte,
+    half, uhalf,
+    word
+};
+
+// Returns the numbers to RW bytes.
+inline static constexpr uint8_t operator*(EMemoryRW rw)
+{
+    switch (rw)
+    {
+        case EMemoryRW::byte:
+        case EMemoryRW::ubyte:
+        {
+            return 1;
+        }
+        case EMemoryRW::half:
+        case EMemoryRW::uhalf:
+        {
+            return 2;
+        }
+        case EMemoryRW::word:
+        {
+            return 4;
+        }
+    }
+    return 0;
+}
+
 struct ctrl_EX
 {
     uint8_t regDst : 1;
@@ -107,6 +137,7 @@ struct ctrl_M
     uint8_t branch : 1;
     uint8_t memRead : 1;
     uint8_t memWrite : 1;
+    EMemoryRW numBytes;
 };
 struct ctrl_WB
 {

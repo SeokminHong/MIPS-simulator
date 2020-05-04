@@ -292,6 +292,7 @@ int MakeRegister()
 
 int MakeOutput(int mode)
 {
+    return 0;
     std::string outFileName = fileName.substr(0, parsePos) + "-out" + (mode ? '1' : '0') + ".txt";
     
     std::ofstream outfile;

@@ -82,10 +82,8 @@ void Machine::ID()
 {
     Instruction const* curInst = if_id.curInst;
     inst_t inst = curInst ? curInst->GetInstruction() : inst_t{0};
-    auto control = Control(inst);
-    id_ex.ex = std::get<0>(control);
-    id_ex.m = std::get<1>(control);
-    id_ex.wb = std::get<2>(control);
+    std::tie(id_ex.ex, id_ex.m, id_ex.wb) = Control(inst);
+
     id_ex.rd0 = inst.reg.rt;
     id_ex.rd1 = inst.reg.rd;
     id_ex.address = inst.base.address;
@@ -130,17 +128,64 @@ void Machine::MEM()
     mux_fwd1.SetValue(2, ex_mem.aluResult);
     forwarding.ex_mem_rd = ex_mem.rd;
 
-    int bytes = 4;
+    int bytes = *ex_mem.m.numBytes;
     if (ex_mem.m.memWrite)
     {
-        *(uint32_t*)(memory + ex_mem.aluResult) = ex_mem.rt_val;
+        switch (ex_mem.m.numBytes)
+        {
+            case EMemoryRW::byte:
+            {
+                *(uint8_t*)(memory + ex_mem.aluResult) = ex_mem.rt_val;
+                break;
+            }
+            case EMemoryRW::half:
+            {
+                *(uint16_t*)(memory + ex_mem.aluResult) = ex_mem.rt_val;
+                break;
+            }
+            case EMemoryRW::word:
+            {
+                *(uint32_t*)(memory + ex_mem.aluResult) = ex_mem.rt_val;
+                break;
+            }
+            default: {}
+        }
+        //*(uint32_t*)(memory + ex_mem.aluResult) = ex_mem.rt_val;
         std::string formatStr = "W %d %04x %04x";
         formatStr[12] = bytes + '0';
         sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, ex_mem.rt_val);
     }
     else if (ex_mem.m.memRead)
     {
-        mem_wb.readData = *(uint32_t*)(memory + ex_mem.aluResult);
+        switch (ex_mem.m.numBytes)
+        {
+            case EMemoryRW::byte:
+            {
+                *((int32_t*)&mem_wb.readData) = *(int8_t*)(memory + ex_mem.aluResult);
+                break;
+            }
+            case EMemoryRW::ubyte:
+            {
+                mem_wb.readData = *(uint8_t*)(memory + ex_mem.aluResult);
+                break;
+            }
+            case EMemoryRW::half:
+            {
+                *((int32_t*)&mem_wb.readData) = *(int16_t*)(memory + ex_mem.aluResult);
+                break;
+            }
+            case EMemoryRW::uhalf:
+            {
+                mem_wb.readData = *(uint16_t*)(memory + ex_mem.aluResult);
+                break;
+            }
+            case EMemoryRW::word:
+            {
+                mem_wb.readData = *(uint32_t*)(memory + ex_mem.aluResult);
+                break;
+            }
+        }
+        //mem_wb.readData = *(uint32_t*)(memory + ex_mem.aluResult);
         std::string formatStr = "R %d %04x %04x";
         formatStr[12] = bytes + '0';
         sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, mem_wb.readData);
