@@ -1,0 +1,38 @@
+code:
+\x8d\x30\x00\x14\x02\x0b\x50\x22\x10\x00\xff\xff\x00\x00\x00\x00
+
+count:
+10
+
+output 0:
+    cycle 1: 1
+    cycle 2: 2
+    cycle 3: 3
+    cycle 4: 4
+    cycle 5: 5
+        t0 = 8
+        mem W 4 0014 0008
+    cycle 6: 5
+        mem R 4 0014 0008
+    cycle 7: 6
+        s0 = 8
+    cycle 8: 5
+    cycle 9: 6
+        t2 = 8
+    cycle 10: 5
+    
+output 1:
+    cycle 1: 1
+    cycle 2: 2
+    cycle 3: 3
+    cycle 4: 4
+    cycle 5: 5
+        t0 = 8
+        mem W 4 0014 0008
+    cycle 6: 5
+    cycle 7: 6
+        s0 = 8
+    cycle 8: 5
+    cycle 9: 6
+        t2 = 8
+    cycle 10: 5

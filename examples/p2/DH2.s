@@ -1,8 +1,8 @@
 ;; DH2
 
+addi    $t0, $zero, 5
+sw      $s0, 20($t1)
 lw      $s0, 20($t1)
 sub     $t2, $s0, $t3
 end:
 b       end
-
-;; \x8d\x30\x00\x14\x02\x0b\x50\x22\x10\x00\xff\xff\x00\x00\x00\x00

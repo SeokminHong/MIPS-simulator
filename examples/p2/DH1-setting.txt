@@ -1,0 +1,33 @@
+code:
+\x01\x09\x80\x20\x02\x0b\x50\x22\x10\x00\xff\xff\x00\x00\x00\x00
+
+count:
+7
+
+register:
+t0=1
+t1=2
+t3=4
+s0=5
+
+output 0:
+    cycle 1: 1
+    cycle 2: 2
+    cycle 3: 3
+    cycle 4: 4
+    cycle 5: 3
+        s0=3
+    cycle 6: 4
+        t2=1
+    cycle 7: 3
+
+output 1:
+    cycle 1: 1
+    cycle 2: 2
+    cycle 3: 3
+    cycle 4: 4
+    cycle 5: 3
+        s0=3
+    cycle 6: 4
+        t2=-1
+    cycle 7: 3
