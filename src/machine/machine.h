@@ -11,6 +11,8 @@
 #define MAX_INSTRUCTION 4096
 #define MAX_MEMORY 65536
 
+using pc_t = uint32_t;
+
 class Machine
 {
 public:
@@ -28,6 +30,11 @@ public:
         mode = newMode;
     }
 
+    inline int GetMode() const
+    {
+        return mode;
+    }
+
     void SetRegister(ERegister reg, uint32_t regVal);
 
     void Run();
@@ -41,12 +48,12 @@ private:
     void MEM();
     void WB();
 
-    PC pc;
+    pc_t pc;
 
     std::array<uint32_t, REG_MAX> registers;
     char memory[MAX_MEMORY];
 
-    Multiplexer<pc_t> mux_pc;
+    UMultiplexer<pc_t> mux_pc;
 
     struct {
         pc_t pc;
@@ -108,10 +115,12 @@ private:
     int mode = 0;
 
     // Forwarding multiplexer
-    Multiplexer<int32_t, 3> mux_fwd0;
-    Multiplexer<int32_t, 3> mux_fwd1;
+    UMultiplexer<int32_t, 3> mux_fwd0;
+    UMultiplexer<int32_t, 3> mux_fwd1;
 
-    Forward forwarding;
+    UForward forwarding{ *this };
 
-    char outputBuffer[100] = {};
+    UHazardDetector hazardDetector{ *this };
+
+    char outputBuffer[100]{};
 };

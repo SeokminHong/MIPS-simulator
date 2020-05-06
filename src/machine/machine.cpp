@@ -26,8 +26,7 @@ void Machine::SetRegister(ERegister reg, uint32_t regVal)
 
 void Machine::Run()
 {
-    pc.SetPCWrite(true);
-    pc.TryWrite(0);
+    pc = 0;
     for (int cycle = 0; cycle < maxCycle; ++cycle)
     {
         if (cycle > 0)
@@ -64,25 +63,30 @@ void Machine::IF()
     mux_pc.SetValue(0, if_id.pc);
 
     uint32_t rawInst = 0;
+    Instruction const* curInst = nullptr;
     // Read instruction from instruction memory.
-    if (instructions.size() < pc / 4)
+    if (instructions.size() >= pc / 4)
     {
-        if_id.curInst = nullptr;
+        curInst = &instructions[pc / 4];
+        rawInst = curInst->GetRawInst();
     }
-    else
+
+    if (!hazardDetector.IsHazardDetected())
     {
-        if_id.curInst = &instructions[pc / 4];
-        rawInst = if_id.curInst->GetRawInst();
+        if_id.curInst = curInst;
     }
-    
-    printf("PC: %04X\nInstruction: %08x\n", pc.GetPC(), rawInst);
+
+    printf("PC: %04X\nInstruction: %08x\n", pc, rawInst);
 }
 
 void Machine::ID()
 {
     Instruction const* curInst = if_id.curInst;
     inst_t inst = curInst ? curInst->GetInstruction() : inst_t{0};
-    std::tie(id_ex.ex, id_ex.m, id_ex.wb) = Control(inst);
+    auto controlValue = Control(inst);
+    using tupleType = decltype(controlValue);
+    UMultiplexer<tupleType> mux_ctrl{ controlValue, tupleType{} };
+    std::tie(id_ex.ex, id_ex.m, id_ex.wb) = mux_ctrl.GetValue(hazardDetector.IsHazardDetected());
 
     id_ex.rd0 = inst.reg.rt;
     id_ex.rd1 = inst.reg.rd;
@@ -93,6 +97,9 @@ void Machine::ID()
 
     id_ex.rs = inst.base.rs;
     id_ex.rt = inst.base.rt;
+
+    hazardDetector.id_rs = inst.reg.rs;
+    hazardDetector.id_rt = inst.reg.rt;
 }
 
 void Machine::EX()
@@ -107,20 +114,26 @@ void Machine::EX()
     forwarding.id_ex_rs = id_ex.rs;
     forwarding.id_ex_rt = id_ex.rt;
     
-    Multiplexer<int32_t> mux_aluSrc{ mux_fwd1.GetValue(forwarding.GetB()), id_ex.address };
+    UMultiplexer<int32_t> mux_aluSrc{ mux_fwd1.GetValue(forwarding.GetB()), id_ex.address };
+
+    hazardDetector.ex_rt = id_ex.rt;
+    hazardDetector.id_ex_memRead = id_ex.m.memRead;
 
     //Multiplexer<int32_t> mux_aluSrc{ (int32_t)id_ex.rt_val, id_ex.address };
     EALU control = GetALUControl(id_ex.ex.aluOP1, id_ex.ex.aluOP0, id_ex.address & 63);
     //ex_mem.zero = ALU(control, (int32_t)id_ex.rs_val, mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.aluResult);
     ex_mem.zero = ALU(control, mux_fwd0.GetValue(forwarding.GetA()), mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.aluResult);
     ex_mem.rt_val = id_ex.rt_val;
-    Multiplexer<uint32_t> mux_rd{ id_ex.rd0, id_ex.rd1 };
+    UMultiplexer<uint32_t> mux_rd{ id_ex.rd0, id_ex.rd1 };
     ex_mem.rd = mux_rd.GetValue(id_ex.ex.regDst);
 }
 
 void Machine::MEM()
 {
-    pc.TryWrite(mux_pc.GetValue(ex_mem.zero && ex_mem.m.branch));
+    if (!hazardDetector.IsHazardDetected())
+    {
+        pc = mux_pc.GetValue(ex_mem.zero && ex_mem.m.branch);
+    }
     mem_wb.wb = ex_mem.wb;
     mem_wb.rd = ex_mem.rd;
     
@@ -150,7 +163,6 @@ void Machine::MEM()
             }
             default: {}
         }
-        //*(uint32_t*)(memory + ex_mem.aluResult) = ex_mem.rt_val;
         std::string formatStr = "W %d %04x %04x";
         formatStr[12] = bytes + '0';
         sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, ex_mem.rt_val);
@@ -185,7 +197,6 @@ void Machine::MEM()
                 break;
             }
         }
-        //mem_wb.readData = *(uint32_t*)(memory + ex_mem.aluResult);
         std::string formatStr = "R %d %04x %04x";
         formatStr[12] = bytes + '0';
         sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, mem_wb.readData);
@@ -199,7 +210,7 @@ void Machine::MEM()
 
 void Machine::WB()
 {
-    Multiplexer<uint32_t> mux_memtoReg{ mem_wb.aluResult, mem_wb.readData };
+    UMultiplexer<uint32_t> mux_memtoReg{ mem_wb.aluResult, mem_wb.readData };
     uint32_t value = mux_memtoReg.GetValue(mem_wb.wb.memtoReg);
     
     mux_fwd0.SetValue(1, value);

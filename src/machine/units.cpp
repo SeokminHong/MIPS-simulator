@@ -1,13 +1,6 @@
 #include "units.h"
 #include "instruction.h"
-
-void PC::TryWrite(pc_t newPC)
-{
-    if (pcWrite)
-    {
-        pc = newPC;
-    }
-}
+#include "machine.h"
 
 std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
 {
@@ -179,8 +172,12 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
     return std::make_tuple(std::move(ex), std::move(m), std::move(wb));
 }
 
-int Forward::GetA() const
+int UForward::GetA() const
 {
+    if (owner.GetMode() == 0)
+    {
+        return 0;
+    }
     if (id_ex_rs == ex_mem_rd)
     {
         return 2;
@@ -192,8 +189,12 @@ int Forward::GetA() const
     return 0;
 }
 
-int Forward::GetB() const
+int UForward::GetB() const
 {
+    if (owner.GetMode() == 0)
+    {
+        return 0;
+    }
     if (id_ex_rt == ex_mem_rd)
     {
         return 2;
@@ -203,4 +204,17 @@ int Forward::GetB() const
         return 1;
     }
     return 0;
+}
+
+bool UHazardDetector::IsHazardDetected() const
+{
+    if (owner.GetMode() == 0)
+    {
+        return false;
+    }
+    if (id_ex_memRead && ex_rt > 0 && ex_rt < REG_MAX)
+    {
+        return (id_rs == ex_rt) || (id_rt == ex_rt);
+    }
+    return false;
 }

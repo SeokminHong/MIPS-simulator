@@ -2,36 +2,10 @@
 
 #include <tuple>
 
-using pc_t = uint32_t;
-
-class PC
-{
-public:
-    inline operator pc_t() const
-    {
-        return pc;
-    }
-
-    inline pc_t GetPC() const
-    {
-        return pc;
-    }
-
-    void TryWrite(pc_t newPC);
-
-    inline void SetPCWrite(bool newPCWrite)
-    {
-        pcWrite = newPCWrite;
-    }
-
-private:
-    pc_t pc;
-
-    bool pcWrite = true;
-};
+class Machine;
 
 template <typename T, int N = 2>
-class Multiplexer
+class UMultiplexer
 {
 private:
     struct internal_size
@@ -44,23 +18,23 @@ private:
         }
     };
 
-    Multiplexer(internal_size n)
+    UMultiplexer(internal_size n)
     {}
 
     template<typename... Targs>
-    Multiplexer(internal_size n, T value, Targs... args) :
-        Multiplexer(internal_size(n - 1), args...)
+    UMultiplexer(internal_size n, T value, Targs... args) :
+        UMultiplexer(internal_size(n - 1), args...)
     {
         values[N - n] = value;
     }
 
 public:
-    Multiplexer()
+    UMultiplexer()
     {}
 
     template<typename... Targs>
-    Multiplexer(Targs... args) :
-        Multiplexer(internal_size(N), args...)
+    UMultiplexer(Targs... args) :
+        UMultiplexer(internal_size(N), args...)
     {}
 
     inline T GetValue(int index) const
@@ -77,9 +51,13 @@ private:
     T values[N]{};
 };
 
-class Forward
+class UForward
 {
 public:
+    UForward(const Machine& machine) :
+        owner(machine)
+    {}
+
     int GetA() const;
     int GetB() const;
 
@@ -87,12 +65,25 @@ public:
     uint32_t id_ex_rt : 5;
     uint32_t ex_mem_rd : 5;
     uint32_t mem_wb_rd : 5;
+
+    const Machine& owner;
 };
 
-class HazardDetector
+class UHazardDetector
 {
 public:
+    UHazardDetector(const Machine& machine) :
+        owner(machine)
+    {};
 
+    bool IsHazardDetected() const;
+
+    bool id_ex_memRead = false;
+    uint8_t ex_rt = 0;
+    uint8_t id_rs = 0;
+    uint8_t id_rt = 0;
+
+    const Machine& owner;
 };
 
 enum class EMemoryRW : uint8_t
@@ -157,7 +148,7 @@ enum EALU
     EALU_nor = 10
 };
 
-inline EALU GetALUControl(uint8_t aluOp1, uint8_t aluOp0, uint32_t funct)
+inline static EALU GetALUControl(uint8_t aluOp1, uint8_t aluOp0, uint32_t funct)
 {
     if (aluOp1 == 0)
     {
