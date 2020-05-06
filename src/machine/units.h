@@ -8,36 +8,16 @@ template <typename T, int N = 2>
 class UMultiplexer
 {
 private:
-    struct internal_size
-    {
-        constexpr internal_size(int n) : size(n) {}
-        int size;
-        constexpr inline operator int()
-        {
-            return size;
-        }
-    };
-
-    UMultiplexer(internal_size n)
-    {}
-
-    template<typename... Targs>
-    UMultiplexer(internal_size n, T value, Targs... args) :
-        UMultiplexer(internal_size(n - 1), args...)
-    {
-        values[N - n] = value;
-    }
-
 public:
     UMultiplexer()
     {}
 
-    template<typename... Targs>
-    UMultiplexer(Targs... args) :
-        UMultiplexer(internal_size(N), args...)
+    template<typename ...TArgs>
+    UMultiplexer(TArgs&&... ts) :
+        values{ std::forward<TArgs>(ts)... }
     {}
 
-    inline T GetValue(int index) const
+    inline const T& GetValue(int index) const
     {
         return values[index];
     }

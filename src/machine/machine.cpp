@@ -86,6 +86,10 @@ void Machine::ID()
     auto controlValue = Control(inst);
     using tupleType = decltype(controlValue);
     UMultiplexer<tupleType> mux_ctrl{ controlValue, tupleType{} };
+
+    hazardDetector.id_rs = inst.reg.rs;
+    hazardDetector.id_rt = inst.reg.rt;
+    
     std::tie(id_ex.ex, id_ex.m, id_ex.wb) = mux_ctrl.GetValue(hazardDetector.IsHazardDetected());
 
     id_ex.rd0 = inst.reg.rt;
@@ -97,9 +101,6 @@ void Machine::ID()
 
     id_ex.rs = inst.base.rs;
     id_ex.rt = inst.base.rt;
-
-    hazardDetector.id_rs = inst.reg.rs;
-    hazardDetector.id_rt = inst.reg.rt;
 }
 
 void Machine::EX()

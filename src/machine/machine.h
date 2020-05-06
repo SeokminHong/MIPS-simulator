@@ -66,12 +66,12 @@ private:
         int32_t rt_val;
         int32_t address;
         
-        uint32_t rd0 : 5;
-        uint32_t rd1 : 5;
+        reg_t rd0;
+        reg_t rd1;
         
         // Forwarding unit inputs.
-        uint32_t rs : 5;
-        uint32_t rt : 5;
+        reg_t rs;
+        reg_t rt;
 
         // Control signals.
         ctrl_EX ex;
@@ -84,9 +84,9 @@ private:
         int32_t aluResult;
         int32_t rt_val;
 
-        uint32_t zero : 1;
+        bool zero = 0;
         // Forwarding unit inputs.
-        uint32_t rd : 5;
+        reg_t rd;
         
         // Control signals.
         ctrl_M m;
@@ -98,7 +98,7 @@ private:
         uint32_t aluResult;
         
         // Forwarding unit inputs.
-        uint32_t rd : 5;
+        reg_t rd;
         
         // Control signals.
         ctrl_WB wb;
