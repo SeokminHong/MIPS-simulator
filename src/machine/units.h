@@ -2,44 +2,99 @@
 
 #include <tuple>
 
-template <typename T>
-class Multiplexer
+class Machine;
+
+template <typename T, int N = 2>
+class UMultiplexer
 {
+private:
 public:
-    Multiplexer()
+    UMultiplexer()
     {}
 
-    Multiplexer(const T& _trueValue, const T& _falseValue) :
-        trueValue(_trueValue), falseValue(_falseValue)
+    template<typename ...TArgs>
+    UMultiplexer(TArgs&&... ts) :
+        values{ std::forward<TArgs>(ts)... }
     {}
 
-    inline T GetValue(bool isTrue)
+    inline const T& GetValue(int index) const
     {
-        return isTrue ? trueValue : falseValue;
+        return values[index];
     }
 
-    inline void SetTrueValue(const T& value)
+    inline void SetValue(int index, const T& value)
     {
-        trueValue = value;
-    }
-
-    inline void SetFalseValue(const T& value)
-    {
-        falseValue = value;
+        values[index] = value;
     }
 
 private:
-    T trueValue = 0;
-    T falseValue = 0;
+    T values[N]{};
 };
 
-class Forward
+class UForward
 {
 public:
+    UForward(const Machine& machine) :
+        owner(machine)
+    {}
 
-private:
-    
+    int GetA() const;
+    int GetB() const;
+
+    uint32_t id_ex_rs : 5;
+    uint32_t id_ex_rt : 5;
+    uint32_t ex_mem_rd : 5;
+    uint32_t mem_wb_rd : 5;
+
+    const Machine& owner;
 };
+
+class UHazardDetector
+{
+public:
+    UHazardDetector(const Machine& machine) :
+        owner(machine)
+    {};
+
+    bool IsHazardDetected() const;
+
+    bool id_ex_memRead = false;
+    uint8_t ex_rt = 0;
+    uint8_t id_rs = 0;
+    uint8_t id_rt = 0;
+
+    const Machine& owner;
+};
+
+enum class EMemoryRW : uint8_t
+{
+    byte, ubyte,
+    half, uhalf,
+    word
+};
+
+// Returns the numbers to RW bytes.
+inline static constexpr uint8_t operator*(EMemoryRW rw)
+{
+    switch (rw)
+    {
+        case EMemoryRW::byte:
+        case EMemoryRW::ubyte:
+        {
+            return 1;
+        }
+        case EMemoryRW::half:
+        case EMemoryRW::uhalf:
+        {
+            return 2;
+        }
+        case EMemoryRW::word:
+        {
+            return 4;
+        }
+    }
+    return 0;
+}
 
 struct ctrl_EX
 {
@@ -53,6 +108,7 @@ struct ctrl_M
     uint8_t branch : 1;
     uint8_t memRead : 1;
     uint8_t memWrite : 1;
+    EMemoryRW numBytes;
 };
 struct ctrl_WB
 {
@@ -72,7 +128,7 @@ enum EALU
     EALU_nor = 10
 };
 
-inline EALU GetALUControl(uint8_t aluOp1, uint8_t aluOp0, uint32_t funct)
+inline static EALU GetALUControl(uint8_t aluOp1, uint8_t aluOp0, uint32_t funct)
 {
     if (aluOp1 == 0)
     {

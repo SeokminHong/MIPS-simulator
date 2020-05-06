@@ -30,6 +30,11 @@ public:
         mode = newMode;
     }
 
+    inline int GetMode() const
+    {
+        return mode;
+    }
+
     void SetRegister(ERegister reg, uint32_t regVal);
 
     void Run();
@@ -43,12 +48,12 @@ private:
     void MEM();
     void WB();
 
-    pc_t pc = 0;
+    pc_t pc;
 
     std::array<uint32_t, REG_MAX> registers;
     char memory[MAX_MEMORY];
 
-    Multiplexer<pc_t> mux_pc;
+    UMultiplexer<pc_t> mux_pc;
 
     struct {
         pc_t pc;
@@ -59,9 +64,16 @@ private:
         pc_t pc;
         int32_t rs_val;
         int32_t rt_val;
-        uint32_t rd0 : 5;
-        uint32_t rd1 : 5;
         int32_t address;
+        
+        reg_t rd0;
+        reg_t rd1;
+        
+        // Forwarding unit inputs.
+        reg_t rs;
+        reg_t rt;
+
+        // Control signals.
         ctrl_EX ex;
         ctrl_M m;
         ctrl_WB wb;
@@ -70,9 +82,13 @@ private:
     struct {
         pc_t pc;
         int32_t aluResult;
-        uint32_t zero : 1;
         int32_t rt_val;
-        int32_t rd;
+
+        bool zero = 0;
+        // Forwarding unit inputs.
+        reg_t rd;
+        
+        // Control signals.
         ctrl_M m;
         ctrl_WB wb;
     } ex_mem;
@@ -80,7 +96,11 @@ private:
     struct {
         uint32_t readData;
         uint32_t aluResult;
-        int32_t rd;
+        
+        // Forwarding unit inputs.
+        reg_t rd;
+        
+        // Control signals.
         ctrl_WB wb;
     } mem_wb;
 
@@ -94,5 +114,13 @@ private:
     int maxCycle = 0;
     int mode = 0;
 
-    char outputBuffer[100] = {};
+    // Forwarding multiplexer
+    UMultiplexer<int32_t, 3> mux_fwd0;
+    UMultiplexer<int32_t, 3> mux_fwd1;
+
+    UForward forwarding{ *this };
+
+    UHazardDetector hazardDetector{ *this };
+
+    char outputBuffer[100]{};
 };
