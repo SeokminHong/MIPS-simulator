@@ -109,8 +109,8 @@ void Machine::EX()
     ex_mem.wb = id_ex.wb;
     ALU(EALU_add, (int32_t)id_ex.pc, id_ex.address << 2, (int32_t&)ex_mem.pc);
 
-    mux_fwd0.SetValue(0, (int32_t)id_ex.rs_val);
-    mux_fwd1.SetValue(0, (int32_t)id_ex.rt_val);
+    mux_fwd0.SetValue(0, id_ex.rs_val);
+    mux_fwd1.SetValue(0, id_ex.rt_val);
 
     forwarding.id_ex_rs = id_ex.rs;
     forwarding.id_ex_rt = id_ex.rt;
@@ -120,9 +120,7 @@ void Machine::EX()
     hazardDetector.ex_rt = id_ex.rt;
     hazardDetector.id_ex_memRead = id_ex.m.memRead;
 
-    //Multiplexer<int32_t> mux_aluSrc{ (int32_t)id_ex.rt_val, id_ex.address };
     EALU control = GetALUControl(id_ex.ex.aluOP1, id_ex.ex.aluOP0, id_ex.address & 63);
-    //ex_mem.zero = ALU(control, (int32_t)id_ex.rs_val, mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.aluResult);
     ex_mem.zero = ALU(control, mux_fwd0.GetValue(forwarding.GetA()), mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.aluResult);
     ex_mem.rt_val = id_ex.rt_val;
     UMultiplexer<uint32_t> mux_rd{ id_ex.rd0, id_ex.rd1 };
