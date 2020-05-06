@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <array>
-#include <stack>
 #include "register.h"
 #include "instruction.h"
 #include "units.h"
@@ -105,11 +104,6 @@ private:
     } mem_wb;
 
     std::vector<Instruction> instructions;
-
-    // Only used for the extra challenge of Phase1.
-    // jal: push PC+4 into $ra.
-    // jr: pop PC from $ra.
-    std::stack<uint32_t> ra;
 
     int maxCycle = 0;
     int mode = 0;
