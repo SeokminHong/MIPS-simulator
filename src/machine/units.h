@@ -200,7 +200,7 @@ static bool ALU(EALU control, const T& arg1, const U& arg2, std::common_type_t<T
         }
         case EALU_nor:
         {
-            ret = !(arg1 | arg2);
+            ret = ~(arg1 | arg2);
             break;
         }
     }
