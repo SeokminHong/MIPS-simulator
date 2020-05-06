@@ -26,6 +26,10 @@ public:
     {
         values[index] = value;
     }
+    inline void SetValue(int index, T&& value)
+    {
+        values[index] = std::move(value);
+    }
 
 private:
     T values[N]{};
