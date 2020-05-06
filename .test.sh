@@ -21,9 +21,9 @@ echo "./${PROGRAM} ${TESTDIR}/$1-code.txt ${COUNT} 0 ${REG} > ${OUTPUTDIR}/$1-ou
 echo diff ${TESTDIR}/$1-out0.txt ${OUTPUTDIR}/$1-out0.txt -B -u
 # DIFF0=$(diff ${TESTDIR}/$1-out0.txt ${OUTPUTDIR}/$1-out0.txt -B -u)
 # if [ ${DIFF0} == "" ]; then
-#   echo Test $1-0 success!
+#   echo Test $1-0 is success!
 # else
-#   echo Test $1-0 failed.
+#   echo Test $1-0 is failed.
 # fi
 
 # Run mode 1
@@ -32,9 +32,9 @@ echo "./${PROGRAM} ${TESTDIR}/$1-code.txt ${COUNT} 1 ${REG} > ${OUTPUTDIR}/$1-ou
 echo diff ${TESTDIR}/$1-out1.txt ${OUTPUTDIR}/$1-out1.txt -B -u
 # DIFF1=$(diff ${TESTDIR}/$1-out1.txt ${OUTPUTDIR}/$1-out1.txt -B -u)
 # if [ ${DIFF1} == "" ]; then
-#   echo Test $1-1 success!
+#   echo Test $1-1 is success!
 # else
-#   echo Test $1-1 failed.
+#   echo Test $1-1 is failed.
 # fi
 
 # if [ ${DIFF0} == "" ] && [ ${DIFF1} == "" ]; then
