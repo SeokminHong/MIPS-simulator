@@ -99,8 +99,11 @@ inline static constexpr uint8_t operator*(EMemoryRW rw)
         {
             return 4;
         }
+        default:
+        {
+            return 0;
+        }
     }
-    return 0;
 }
 
 struct ctrl_EX
