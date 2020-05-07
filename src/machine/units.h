@@ -157,7 +157,7 @@ inline static EALU GetALUControl(uint8_t aluOp1, uint8_t aluOp0, uint32_t funct)
 }
 
 template<typename T, typename U>
-static bool ALU(EALU control, const T& arg1, const U& arg2, std::common_type_t<T, U>& ret)
+static bool ALU(EALU control, const T& arg1, const U& arg2, typename std::common_type<T, U>::type& ret)
 {
     switch (control)
     {
