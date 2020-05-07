@@ -15,7 +15,9 @@ public:
     template<typename ...TArgs>
     UMultiplexer(TArgs&&... ts) :
         values{ std::forward<TArgs>(ts)... }
-    {}
+    {
+        static_assert(sizeof...(ts) == N);
+    }
 
     inline const T& GetValue(int index) const
     {
