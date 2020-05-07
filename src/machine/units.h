@@ -83,27 +83,9 @@ enum class EMemoryRW : uint8_t
 // Returns the numbers to RW bytes.
 inline static constexpr uint8_t operator*(EMemoryRW rw)
 {
-    switch (rw)
-    {
-        case EMemoryRW::byte:
-        case EMemoryRW::ubyte:
-        {
-            return 1;
-        }
-        case EMemoryRW::half:
-        case EMemoryRW::uhalf:
-        {
-            return 2;
-        }
-        case EMemoryRW::word:
-        {
-            return 4;
-        }
-        default:
-        {
-            return 0;
-        }
-    }
+    return (rw < EMemoryRW::half) ? 1 : 
+            ((rw < EMemoryRW::word) ? 2 : 
+              (rw == EMemoryRW::word ? 4 : 0));
 }
 
 struct ctrl_EX
