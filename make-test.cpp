@@ -305,7 +305,7 @@ int MakeOutput(int mode)
     }
 
     std::unordered_map<int, std::vector<std::string>> states;
-    std::array<uint32_t, REG_MAX> regArrCpy{regArr};
+    typename std::array<uint32_t, REG_MAX> regArrCpy{regArr};
     char buffer[30];
 
     for (int cycle = 1; cycle <= count; ++cycle)

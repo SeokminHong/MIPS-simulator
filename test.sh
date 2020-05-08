@@ -1,4 +1,4 @@
 # Build
-make && make test
+make && make test || exit -1
 
 ./.test.sh $1
