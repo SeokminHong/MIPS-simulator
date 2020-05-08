@@ -10,7 +10,7 @@
 #define MAX_INSTRUCTION 4096
 #define MAX_MEMORY 65536
 
-using pc_t = uint32_t;
+using pc_t = int32_t;
 
 class Machine
 {

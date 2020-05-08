@@ -59,13 +59,13 @@ void Machine::Cycle()
 void Machine::IF()
 {
     // Increase PC.
-    ALU(EALU_add, pc, 4u, if_id.pc);
+    ALU(EALU_add, pc, 4, if_id.pc);
     mux_pc.SetValue(0, if_id.pc);
 
     uint32_t rawInst = 0;
     Instruction const* curInst = nullptr;
     // Read instruction from instruction memory.
-    if (instructions.size() >= pc / 4)
+    if ((int32_t)instructions.size() >= pc / 4)
     {
         curInst = &instructions[pc / 4];
         rawInst = curInst->GetRawInst();
@@ -107,7 +107,7 @@ void Machine::EX()
 {
     ex_mem.m = id_ex.m;
     ex_mem.wb = id_ex.wb;
-    ALU(EALU_add, (int32_t)id_ex.pc, id_ex.address << 2, (int32_t&)ex_mem.pc);
+    ALU(EALU_add, id_ex.pc, id_ex.address << 2, ex_mem.pc);
 
     mux_fwd0.SetValue(0, id_ex.rs_val);
     mux_fwd1.SetValue(0, id_ex.rt_val);
