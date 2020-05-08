@@ -7,7 +7,7 @@ Machine::Machine()
 {
     registers.fill(0u);
     instructions.reserve(MAX_INSTRUCTION);
-    memset(memory, 0, MAX_MEMORY);
+    memset(&memory, 0, sizeof(memory));
     memset(&if_id, 0, sizeof(if_id));
     memset(&id_ex, 0, sizeof(id_ex));
     memset(&ex_mem, 0, sizeof(ex_mem));
@@ -147,17 +147,17 @@ void Machine::MEM()
         {
             case EMemoryRW::byte:
             {
-                *(uint8_t*)(memory + ex_mem.aluResult) = ex_mem.rt_val;
+                *(memory.byte + ex_mem.aluResult) = ex_mem.rt_val;
                 break;
             }
             case EMemoryRW::half:
             {
-                *(uint16_t*)(memory + ex_mem.aluResult) = ex_mem.rt_val;
+                *(memory.half + ex_mem.aluResult) = ex_mem.rt_val;
                 break;
             }
             case EMemoryRW::word:
             {
-                *(uint32_t*)(memory + ex_mem.aluResult) = ex_mem.rt_val;
+                *(memory.word + ex_mem.aluResult) = ex_mem.rt_val;
                 break;
             }
             default: {}
@@ -172,27 +172,27 @@ void Machine::MEM()
         {
             case EMemoryRW::byte:
             {
-                *((int32_t*)&mem_wb.readData) = *(int8_t*)(memory + ex_mem.aluResult);
+                *((int32_t*)&mem_wb.readData) = *(memory.byte + ex_mem.aluResult);
                 break;
             }
             case EMemoryRW::ubyte:
             {
-                mem_wb.readData = *(uint8_t*)(memory + ex_mem.aluResult);
+                mem_wb.readData = *(memory.ubyte + ex_mem.aluResult);
                 break;
             }
             case EMemoryRW::half:
             {
-                *((int32_t*)&mem_wb.readData) = *(int16_t*)(memory + ex_mem.aluResult);
+                *((int32_t*)&mem_wb.readData) = *(memory.half + ex_mem.aluResult);
                 break;
             }
             case EMemoryRW::uhalf:
             {
-                mem_wb.readData = *(uint16_t*)(memory + ex_mem.aluResult);
+                mem_wb.readData = *(memory.uhalf + ex_mem.aluResult);
                 break;
             }
             case EMemoryRW::word:
             {
-                mem_wb.readData = *(uint32_t*)(memory + ex_mem.aluResult);
+                mem_wb.readData = *(memory.word + ex_mem.aluResult);
                 break;
             }
         }

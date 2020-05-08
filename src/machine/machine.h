@@ -50,7 +50,15 @@ private:
     pc_t pc;
 
     std::array<uint32_t, REG_MAX> registers;
-    char memory[MAX_MEMORY];
+
+    union
+    {
+        int8_t byte[MAX_MEMORY];
+        uint8_t ubyte[MAX_MEMORY];
+        int16_t half[MAX_MEMORY / 2];
+        uint16_t uhalf[MAX_MEMORY / 2];
+        int32_t word[MAX_MEMORY / 4];
+    } memory;
 
     UMultiplexer<pc_t> mux_pc;
 
