@@ -1,8 +1,8 @@
 #include "units.h"
-#include "instruction.h"
-#include "machine.h"
+#include "../machine/instruction.h"
+#include "../machine/machine.h"
 
-std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
+std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(const inst_t& inst)
 {
     ctrl_EX ex{};
     ctrl_M m{};
@@ -10,8 +10,11 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
     
     if (inst.raw == 0)
     {
-        return std::tie(ex, m, wb);
+        return std::make_tuple(std::move(ex), std::move(m), std::move(wb));
     }
+
+    ex.op = inst.reg.op;
+    ex.funct = inst.reg.funct;
 
     union {
         uint8_t raw;
@@ -26,8 +29,6 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
     if (op.raw == 0)
     {
         ex.regDst = 1;
-        ex.aluOP1 = 1;
-        ex.aluOP0 = 0;
         ex.aluSrc = 0;
         m.branch = 0;
         m.memRead = 0;
@@ -39,8 +40,6 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
     else if (op.v.hi == 4)
     {
         ex.regDst = 0;
-        ex.aluOP1 = 0;
-        ex.aluOP0 = 0;
         ex.aluSrc = 1;
         m.branch = 0;
         m.memRead = 1;
@@ -81,8 +80,6 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(inst_t inst)
     else if (op.v.hi == 5)
     {
         ex.regDst = 0;
-        ex.aluOP1 = 0;
-        ex.aluOP0 = 0;
         ex.aluSrc = 1;
         m.branch = 0;
         m.memRead = 0;

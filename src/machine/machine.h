@@ -5,10 +5,9 @@
 #include <array>
 #include "register.h"
 #include "instruction.h"
-#include "units.h"
+#include "../units/units.h"
 
 #define MAX_INSTRUCTION 4096
-#define MAX_MEMORY 65536
 
 using pc_t = int32_t;
 
@@ -47,19 +46,15 @@ private:
     void MEM();
     void WB();
 
+    // Flush function for branch stalling.
+    void Flush();
+
     pc_t pc;
 
     std::array<uint32_t, REG_MAX> registers;
 
-    union
-    {
-        int8_t byte[MAX_MEMORY];
-        uint8_t ubyte[MAX_MEMORY];
-        int16_t half[MAX_MEMORY / 2];
-        uint16_t uhalf[MAX_MEMORY / 2];
-        int32_t word[MAX_MEMORY / 4];
-    } memory;
-
+    UMemory memory{ EEndianess::little };
+    
     UMultiplexer<pc_t> mux_pc;
 
     struct {

@@ -7,7 +7,6 @@ Machine::Machine()
 {
     registers.fill(0u);
     instructions.reserve(MAX_INSTRUCTION);
-    memset(&memory, 0, sizeof(memory));
     memset(&if_id, 0, sizeof(if_id));
     memset(&id_ex, 0, sizeof(id_ex));
     memset(&ex_mem, 0, sizeof(ex_mem));
@@ -59,7 +58,7 @@ void Machine::Cycle()
 void Machine::IF()
 {
     // Increase PC.
-    ALU(EALU_add, pc, 4, if_id.pc);
+    if_id.pc = ALU(EALU::ADD, pc, 4);
     mux_pc.SetValue(0, if_id.pc);
 
     uint32_t rawInst = 0;
@@ -107,7 +106,7 @@ void Machine::EX()
 {
     ex_mem.m = id_ex.m;
     ex_mem.wb = id_ex.wb;
-    ALU(EALU_add, id_ex.pc, id_ex.address << 2, ex_mem.pc);
+    ex_mem.pc = ALU(EALU::ADD, id_ex.pc, id_ex.address << 2);
 
     mux_fwd0.SetValue(0, id_ex.rs_val);
     mux_fwd1.SetValue(0, id_ex.rt_val);
@@ -120,8 +119,9 @@ void Machine::EX()
     hazardDetector.ex_rt = id_ex.rt;
     hazardDetector.id_ex_memRead = id_ex.m.memRead;
 
-    EALU control = GetALUControl(id_ex.ex.aluOP1, id_ex.ex.aluOP0, id_ex.address & 63);
-    ex_mem.zero = ALU(control, mux_fwd0.GetValue(forwarding.GetA()), mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.aluResult);
+    EALU control = GetALUControl(id_ex.ex.op, id_ex.ex.funct);
+    ex_mem.aluResult = ALU(control, mux_fwd0.GetValue(forwarding.GetA()), mux_aluSrc.GetValue(id_ex.ex.aluSrc));
+    //ex_mem.zero = ;
     ex_mem.rt_val = id_ex.rt_val;
     UMultiplexer<uint32_t> mux_rd{ id_ex.rd0, id_ex.rd1 };
     ex_mem.rd = mux_rd.GetValue(id_ex.ex.regDst);
@@ -147,17 +147,17 @@ void Machine::MEM()
         {
             case EMemoryRW::byte:
             {
-                *(memory.byte + ex_mem.aluResult) = ex_mem.rt_val;
+                memory.Set<int8_t>(ex_mem.aluResult, ex_mem.rt_val);
                 break;
             }
             case EMemoryRW::half:
             {
-                *(memory.half + ex_mem.aluResult) = ex_mem.rt_val;
+                memory.Set<int16_t>(ex_mem.aluResult, ex_mem.rt_val);
                 break;
             }
             case EMemoryRW::word:
             {
-                *(memory.word + ex_mem.aluResult) = ex_mem.rt_val;
+                memory.Set<int32_t>(ex_mem.aluResult, ex_mem.rt_val);
                 break;
             }
             default: {}
@@ -172,27 +172,27 @@ void Machine::MEM()
         {
             case EMemoryRW::byte:
             {
-                *((int32_t*)&mem_wb.readData) = *(memory.byte + ex_mem.aluResult);
+                *((int32_t*)&mem_wb.readData) = memory.Get<int8_t>(ex_mem.aluResult);
                 break;
             }
             case EMemoryRW::ubyte:
             {
-                mem_wb.readData = *(memory.ubyte + ex_mem.aluResult);
+                mem_wb.readData = memory.Get<uint8_t>(ex_mem.aluResult);
                 break;
             }
             case EMemoryRW::half:
             {
-                *((int32_t*)&mem_wb.readData) = *(memory.half + ex_mem.aluResult);
+                *((int32_t*)&mem_wb.readData) = memory.Get<int16_t>(ex_mem.aluResult);
                 break;
             }
             case EMemoryRW::uhalf:
             {
-                mem_wb.readData = *(memory.uhalf + ex_mem.aluResult);
+                mem_wb.readData = memory.Get<uint16_t>(ex_mem.aluResult);
                 break;
             }
             case EMemoryRW::word:
             {
-                mem_wb.readData = *(memory.word + ex_mem.aluResult);
+                mem_wb.readData = memory.Get<int32_t>(ex_mem.aluResult);
                 break;
             }
         }
@@ -220,4 +220,11 @@ void Machine::WB()
     {
         registers[mem_wb.rd] = value;
     }
+}
+
+void Machine::Flush()
+{
+    memset(&if_id, 0, sizeof(if_id));
+    memset(&id_ex, 0, sizeof(id_ex));
+    memset(&ex_mem, 0, sizeof(ex_mem));
 }

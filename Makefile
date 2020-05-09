@@ -1,5 +1,8 @@
 TARGET = simulator
-SOURCES = src/main.cpp src/machine/instruction.cpp src/machine/machine.cpp src/machine/units.cpp
+SOURCE = src/main.cpp
+SOURCE-MACHINE = src/machine/instruction.cpp src/machine/machine.cpp
+SOURCE-UNITS = src/units/alu.cpp src/units/units.cpp
+SOURCES = $(SOURCE) $(SOURCE-MACHINE) $(SOURCE-UNITS)
 CODEDIR = ./examples/p2
 MAKEREGISTER = make-register
 TESTTARGET = make-test
