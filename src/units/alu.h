@@ -43,7 +43,7 @@ static inline uint32_t ALU(EALU control, const uint32_t& arg1, const uint32_t& a
         }
         case EALU::SLT:
         {
-            return *(int32_t*)&arg1 < *(int32_t*)&arg2;
+            return *(const int32_t*)&arg1 < *(const int32_t*)&arg2;
         }
         case EALU::SLTU:
         {
@@ -59,7 +59,7 @@ static inline uint32_t ALU(EALU control, const uint32_t& arg1, const uint32_t& a
         }
         case EALU::SRA:
         {
-            return *(int32_t*)&arg1 >> *(int32_t*)&arg2;
+            return *(const int32_t*)&arg1 >> *(const int32_t*)&arg2;
         }
         default:
         {}
