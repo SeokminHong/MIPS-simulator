@@ -58,3 +58,10 @@ static inline uint32_t ALU(EALU control, const uint32_t& arg1, const uint32_t& a
     }
     return 0;
 }
+
+static inline uint32_t ALU(EALU control, const uint32_t& arg1, const uint32_t& arg2, bool& zero)
+{
+    uint32_t ret = ALU(control, arg1, arg2);
+    zero = ret == 0;
+    return ret;
+}

@@ -18,6 +18,8 @@ struct ctrl_EX
 struct ctrl_M
 {
     uint8_t branch : 1;
+    uint8_t beq : 1;
+    uint8_t jump : 1;
     uint8_t memRead : 1;
     uint8_t memWrite : 1;
     EMemoryRW numBytes;

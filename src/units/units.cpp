@@ -29,21 +29,41 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(const inst_t& inst)
     if (op.raw == 0)
     {
         ex.regDst = 1;
-        ex.aluSrc = 0;
-        m.branch = 0;
-        m.memRead = 0;
-        m.memWrite = 0;
         wb.regWrite = 1;
-        wb.memtoReg = 0;
+    }
+    // J
+    else if (op.raw == 2)
+    {
+        m.jump = 1;
+    }
+    // JAL
+    else if (op.raw == 5)
+    {
+        m.jump = 1;
+        wb.regWrite = 1;
+    }
+    // BEQ
+    else if (op.raw == 4)
+    {
+        m.branch = 1;
+        m.beq = 1;
+    }
+    // BEQ
+    else if (op.raw == 5)
+    {
+        m.branch = 1;
+        m.beq = 0;
+    }
+    // ADDI-LUI
+    else if (op.v.hi == 1)
+    {
+        wb.regWrite = 1;
     }
     // Load
     else if (op.v.hi == 4)
     {
-        ex.regDst = 0;
         ex.aluSrc = 1;
-        m.branch = 0;
         m.memRead = 1;
-        m.memWrite = 0;
         wb.regWrite = 1;
         wb.memtoReg = 1;
 
@@ -79,13 +99,8 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(const inst_t& inst)
     // Save
     else if (op.v.hi == 5)
     {
-        ex.regDst = 0;
         ex.aluSrc = 1;
-        m.branch = 0;
-        m.memRead = 0;
         m.memWrite = 1;
-        wb.regWrite = 0;
-        wb.memtoReg = 0;
         
         switch (op.v.lo)
         {
@@ -106,6 +121,7 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(const inst_t& inst)
             }
         }
     }
+    
     
     /*switch (inst.base.op)
     {

@@ -54,8 +54,9 @@ private:
     std::array<uint32_t, REG_MAX> registers;
 
     UMemory memory{ EEndianess::little };
-    
-    UMultiplexer<pc_t> mux_pc;
+
+    UMultiplexer<pc_t> mux_branch;
+    UMultiplexer<pc_t> mux_jump;
 
     struct {
         pc_t pc;

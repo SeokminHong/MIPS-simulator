@@ -59,7 +59,7 @@ void Machine::IF()
 {
     // Increase PC.
     if_id.pc = ALU(EALU::ADD, pc, 4);
-    mux_pc.SetValue(0, if_id.pc);
+    mux_branch.SetValue(0, if_id.pc);
 
     uint32_t rawInst = 0;
     Instruction const* curInst = nullptr;
@@ -100,6 +100,8 @@ void Machine::ID()
 
     id_ex.rs = inst.base.rs;
     id_ex.rt = inst.base.rt;
+
+    mux_jump.SetValue(1, (pc & JUMP_BITMASK) | (~JUMP_BITMASK & (inst.direct.address << 2)));
 }
 
 void Machine::EX()
@@ -120,18 +122,25 @@ void Machine::EX()
     hazardDetector.id_ex_memRead = id_ex.m.memRead;
 
     EALU control = GetALUControl(id_ex.ex.op, id_ex.ex.funct);
-    ex_mem.aluResult = ALU(control, mux_fwd0.GetValue(forwarding.GetA()), mux_aluSrc.GetValue(id_ex.ex.aluSrc));
-    //ex_mem.zero = ;
+    ex_mem.aluResult = ALU(control, mux_fwd0.GetValue(forwarding.GetA()), mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.zero);
     ex_mem.rt_val = id_ex.rt_val;
     UMultiplexer<uint32_t> mux_rd{ id_ex.rd0, id_ex.rd1 };
     ex_mem.rd = mux_rd.GetValue(id_ex.ex.regDst);
+    mux_branch.SetValue(1, ALU(EALU::ADD, id_ex.pc, id_ex.address << 2));
 }
 
 void Machine::MEM()
 {
     if (!hazardDetector.IsHazardDetected())
     {
-        pc = mux_pc.GetValue(ex_mem.zero && ex_mem.m.branch);
+        pc_t tempPC = mux_branch.GetValue((ex_mem.zero ^ ex_mem.m.beq) && ex_mem.m.branch);
+        mux_jump.SetValue(0, tempPC);
+        pc = mux_jump.GetValue(ex_mem.m.jump);
+        // If jump/branch occurs.
+        if (pc != mux_branch.GetValue(0))
+        {
+            Flush();
+        }
     }
     mem_wb.wb = ex_mem.wb;
     mem_wb.rd = ex_mem.rd;
