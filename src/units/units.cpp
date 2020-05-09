@@ -48,7 +48,7 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(const inst_t& inst)
         m.branch = 1;
         m.beq = 1;
     }
-    // BEQ
+    // BNE
     else if (op.raw == 5)
     {
         m.branch = 1;
