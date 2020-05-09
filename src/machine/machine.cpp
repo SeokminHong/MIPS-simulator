@@ -93,6 +93,7 @@ void Machine::ID()
 
     id_ex.rd0 = inst.reg.rt;
     id_ex.rd1 = inst.reg.rd;
+    id_ex.shamt = inst.reg.shamt;
     id_ex.address = inst.base.address;
     
     id_ex.rs_val = registers[inst.base.rs];
@@ -122,7 +123,16 @@ void Machine::EX()
     hazardDetector.id_ex_memRead = id_ex.m.memRead;
 
     EALU control = GetALUControl(id_ex.ex.op, id_ex.ex.funct);
-    ex_mem.aluResult = ALU(control, mux_fwd0.GetValue(forwarding.GetA()), mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.zero);
+    // It is not shift operation.
+    if (control != EALU::SLL && control != EALU::SRL && control != EALU::SRA)
+    {
+        ex_mem.aluResult = ALU(control, mux_fwd0.GetValue(forwarding.GetA()), mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.zero);
+    }
+    else
+    {
+        ex_mem.aluResult = ALU(control, mux_aluSrc.GetValue(id_ex.ex.aluSrc), id_ex.shamt, ex_mem.zero);
+    }
+    
     ex_mem.rt_val = id_ex.rt_val;
     UMultiplexer<uint32_t> mux_rd{ id_ex.rd0, id_ex.rd1 };
     ex_mem.rd = mux_rd.GetValue(id_ex.ex.regDst);

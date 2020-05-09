@@ -8,8 +8,8 @@ enum class EALU : uint8_t
     AND,
     OR,
     NOR,
-    ADD, ADDU,
-    SUB, SUBU,
+    ADD,
+    SUB,
     SLT, SLTU,
     SLL,
     SRL, SRA
@@ -43,6 +43,10 @@ static inline uint32_t ALU(EALU control, const uint32_t& arg1, const uint32_t& a
         }
         case EALU::SLT:
         {
+            return *(int32_t*)&arg1 < *(int32_t*)&arg2;
+        }
+        case EALU::SLTU:
+        {
             return arg1 < arg2;
         }
         case EALU::SLL:
@@ -52,6 +56,10 @@ static inline uint32_t ALU(EALU control, const uint32_t& arg1, const uint32_t& a
         case EALU::SRL:
         {
             return arg1 >> arg2;
+        }
+        case EALU::SRA:
+        {
+            return *(int32_t*)&arg1 >> *(int32_t*)&arg2;
         }
         default:
         {}

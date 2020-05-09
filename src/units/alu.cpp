@@ -10,7 +10,7 @@ void InitALUControl(EALU ALUControls[], EALU RFormats[])
     ALUControls[5]  = EALU::SUB;  // BNE
 
     ALUControls[8]  = EALU::ADD;  // ADDI
-    ALUControls[9]  = EALU::ADDU; // ADDIU
+    ALUControls[9]  = EALU::ADD;  // ADDIU
 
     ALUControls[10] = EALU::SLT;  // SLTI
     ALUControls[11] = EALU::SLTU; // SLTIU
@@ -35,9 +35,9 @@ void InitALUControl(EALU ALUControls[], EALU RFormats[])
     RFormats[8]  = EALU::ADD;  // JR
     
     RFormats[32] = EALU::ADD;  // ADD
-    RFormats[33] = EALU::ADDU; // ADDU
+    RFormats[33] = EALU::ADD;  // ADDU
     RFormats[34] = EALU::SUB;  // SUB
-    RFormats[35] = EALU::SUBU; // SUBU
+    RFormats[35] = EALU::SUB;  // SUBU
 
     RFormats[36] = EALU::AND;  // AND
     RFormats[37] = EALU::OR;   // OR

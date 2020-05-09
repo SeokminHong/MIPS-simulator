@@ -68,6 +68,7 @@ private:
         int32_t rs_val;
         int32_t rt_val;
         int32_t address;
+        int32_t shamt;
         
         reg_t rd0;
         reg_t rd1;
