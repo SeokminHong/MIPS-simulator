@@ -37,7 +37,7 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(const inst_t& inst)
         m.jump = 1;
     }
     // JAL
-    else if (op.raw == 5)
+    else if (op.raw == 3)
     {
         m.jump = 1;
         wb.regWrite = 1;
@@ -54,9 +54,10 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(const inst_t& inst)
         m.branch = 1;
         m.beq = 0;
     }
-    // ADDI-LUI
+    // Immediates
     else if (op.v.hi == 1)
     {
+        ex.aluSrc = 1;
         wb.regWrite = 1;
     }
     // Load

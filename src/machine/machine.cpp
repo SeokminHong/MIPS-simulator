@@ -1,5 +1,6 @@
 #include "machine.h"
 #include <cstring>
+#include <algorithm>
 
 #define JUMP_BITMASK (15u << 28)
 
@@ -70,11 +71,20 @@ void Machine::IF()
         rawInst = curInst->GetRawInst();
     }
 
-    if (!hazardDetector.IsHazardDetected())
+    if (!NeedsStall())
     {
         if_id.curInst = curInst;
+        constexpr std::array<uint8_t, 4> branchOpCodes = { 2, 3, 4, 5 };
+        if (std::find(branchOpCodes.begin(), branchOpCodes.end(), curInst->GetOpCode()) != branchOpCodes.end())
+        {
+            branchUnresolved = true;
+        }
     }
-
+    else
+    {
+        if_id.curInst = nullptr;
+    }
+    
     printf("PC: %04X\nInstruction: %08x\n", pc, rawInst);
 }
 
@@ -88,6 +98,8 @@ void Machine::ID()
 
     hazardDetector.id_rs = inst.reg.rs;
     hazardDetector.id_rt = inst.reg.rt;
+
+    id_ex.pc = if_id.pc;
     
     std::tie(id_ex.ex, id_ex.m, id_ex.wb) = mux_ctrl.GetValue(hazardDetector.IsHazardDetected());
 
@@ -107,8 +119,8 @@ void Machine::ID()
 
 void Machine::EX()
 {
-    ex_mem.m = id_ex.m;
-    ex_mem.wb = id_ex.wb;
+    ex_mem.m = std::move(id_ex.m);
+    ex_mem.wb = std::move(id_ex.wb);
     ex_mem.pc = ALU(EALU::ADD, id_ex.pc, id_ex.address << 2);
 
     mux_fwd0.SetValue(0, id_ex.rs_val);
@@ -136,23 +148,31 @@ void Machine::EX()
     ex_mem.rt_val = id_ex.rt_val;
     UMultiplexer<uint32_t> mux_rd{ id_ex.rd0, id_ex.rd1 };
     ex_mem.rd = mux_rd.GetValue(id_ex.ex.regDst);
-    mux_branch.SetValue(1, ALU(EALU::ADD, id_ex.pc, id_ex.address << 2));
 }
 
 void Machine::MEM()
 {
     if (!hazardDetector.IsHazardDetected())
     {
-        pc_t tempPC = mux_branch.GetValue((ex_mem.zero ^ ex_mem.m.beq) && ex_mem.m.branch);
-        mux_jump.SetValue(0, tempPC);
-        pc = mux_jump.GetValue(ex_mem.m.jump);
-        // If jump/branch occurs.
-        if (pc != mux_branch.GetValue(0))
+        mux_branch.SetValue(1, ex_mem.pc);
+        pc_t newPC = mux_branch.GetValue((ex_mem.zero ^ ex_mem.m.beq) && ex_mem.m.branch);
+        mux_jump.SetValue(0, newPC);
+        newPC = mux_jump.GetValue(ex_mem.m.jump);
+        if (branchUnresolved)
         {
-            Flush();
+            // If jump/branch occurs.
+            if (ex_mem.m.branch | ex_mem.m.jump)
+            {
+                branchUnresolved = false;
+                pc = newPC;
+            }
         }
+        else
+        {
+            pc = newPC;
+        }        
     }
-    mem_wb.wb = ex_mem.wb;
+    mem_wb.wb = std::move(ex_mem.wb);
     mem_wb.rd = ex_mem.rd;
     
     mux_fwd0.SetValue(2, ex_mem.aluResult);
@@ -241,9 +261,11 @@ void Machine::WB()
     }
 }
 
-void Machine::Flush()
+bool Machine::NeedsStall() const
 {
-    memset(&if_id, 0, sizeof(if_id));
-    memset(&id_ex, 0, sizeof(id_ex));
-    memset(&ex_mem, 0, sizeof(ex_mem));
+    if (hazardDetector.IsHazardDetected())
+    {
+        return true;
+    }
+    return branchUnresolved;
 }

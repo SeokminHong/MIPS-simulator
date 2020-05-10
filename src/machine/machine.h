@@ -46,10 +46,10 @@ private:
     void MEM();
     void WB();
 
-    // Flush function for branch stalling.
-    void Flush();
+    bool NeedsStall() const;
 
     pc_t pc;
+    bool branchUnresolved = false;
 
     std::array<uint32_t, REG_MAX> registers;
 
