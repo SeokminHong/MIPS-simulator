@@ -48,8 +48,10 @@ private:
 
     bool NeedsStall() const;
 
-    pc_t pc;
+    pc_t pc = 0;
     bool branchUnresolved = false;
+    bool branchResolvedFlag = false;
+    pc_t pendingPC = 0;
 
     std::array<uint32_t, REG_MAX> registers;
 

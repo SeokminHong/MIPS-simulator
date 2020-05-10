@@ -46,6 +46,12 @@ void Machine::Cycle()
     ID();
     IF();
 
+    if (branchResolvedFlag)
+    {
+        branchUnresolved = false;
+        pc = pendingPC;
+    }
+
     // Print registers' states.
     puts("Registers:");
     for (int i = 0; i < REG_MAX; ++i)
@@ -155,7 +161,7 @@ void Machine::MEM()
     if (!hazardDetector.IsHazardDetected())
     {
         mux_branch.SetValue(1, ex_mem.pc);
-        pc_t newPC = mux_branch.GetValue((ex_mem.zero ^ ex_mem.m.beq) && ex_mem.m.branch);
+        pc_t newPC = mux_branch.GetValue((ex_mem.zero == ex_mem.m.beq) && ex_mem.m.branch);
         mux_jump.SetValue(0, newPC);
         newPC = mux_jump.GetValue(ex_mem.m.jump);
         if (branchUnresolved)
@@ -163,13 +169,20 @@ void Machine::MEM()
             // If jump/branch occurs.
             if (ex_mem.m.branch | ex_mem.m.jump)
             {
-                branchUnresolved = false;
-                pc = newPC;
+                branchResolvedFlag = true;
+                pendingPC = newPC;
             }
         }
         else
         {
-            pc = newPC;
+            if (branchResolvedFlag)
+            {
+                branchResolvedFlag = false;
+            }
+            else
+            {
+                pc = newPC;
+            }
         }        
     }
     mem_wb.wb = std::move(ex_mem.wb);
