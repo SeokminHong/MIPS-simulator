@@ -8,10 +8,6 @@ Machine::Machine()
 {
     registers.fill(0u);
     instructions.reserve(MAX_INSTRUCTION);
-    //memset(&if_id, 0, sizeof(if_id));
-    //memset(&id_ex, 0, sizeof(id_ex));
-    //memset(&ex_mem, 0, sizeof(ex_mem));
-    //memset(&mem_wb, 0, sizeof(mem_wb));
 }
 
 void Machine::AddInstruction(uint32_t instruction)
