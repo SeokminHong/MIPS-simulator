@@ -22,7 +22,7 @@ struct ctrl_M
     uint8_t jump : 1;
     uint8_t memRead : 1;
     uint8_t memWrite : 1;
-    EMemoryRW numBytes;
+    EMemoryRW numBytes = EMemoryRW::word;
 };
 struct ctrl_WB
 {

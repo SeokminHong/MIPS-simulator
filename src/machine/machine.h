@@ -61,53 +61,53 @@ private:
     UMultiplexer<pc_t> mux_jump;
 
     struct {
-        pc_t pc;
+        pc_t pc = 0;
         Instruction const* curInst = nullptr;
     } if_id;
 
     struct {
-        pc_t pc;
-        int32_t rs_val;
-        int32_t rt_val;
-        int32_t address;
-        int32_t shamt;
+        pc_t pc = 0;
+        int32_t rs_val = 0;
+        int32_t rt_val = 0;
+        int32_t address = 0;
+        int32_t shamt = 0;
         
-        reg_t rd0;
-        reg_t rd1;
+        reg_t rd0 = 0;
+        reg_t rd1 = 0;
         
         // Forwarding unit inputs.
-        reg_t rs;
-        reg_t rt;
+        reg_t rs = 0;
+        reg_t rt = 0;
 
         // Control signals.
-        ctrl_EX ex;
-        ctrl_M m;
-        ctrl_WB wb;
+        ctrl_EX ex{};
+        ctrl_M m{};
+        ctrl_WB wb{};
     } id_ex;
 
     struct {
-        pc_t offsettedPC;
-        int32_t aluResult;
-        int32_t rt_val;
+        pc_t offsettedPC = 0;
+        int32_t aluResult = 0;
+        int32_t rt_val = 0;
 
         bool zero = 0;
         // Forwarding unit inputs.
-        reg_t rd;
+        reg_t rd = 0;
         
         // Control signals.
-        ctrl_M m;
-        ctrl_WB wb;
+        ctrl_M m{};
+        ctrl_WB wb{};
     } ex_mem;
 
     struct {
-        uint32_t readData;
-        uint32_t aluResult;
+        uint32_t readData = 0;
+        uint32_t aluResult = 0;
         
         // Forwarding unit inputs.
-        reg_t rd;
+        reg_t rd = 0;
         
         // Control signals.
-        ctrl_WB wb;
+        ctrl_WB wb{};
     } mem_wb;
 
     std::vector<Instruction> instructions;
