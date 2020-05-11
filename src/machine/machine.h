@@ -86,7 +86,7 @@ private:
     } id_ex;
 
     struct {
-        pc_t pc;
+        pc_t offsettedPC;
         int32_t aluResult;
         int32_t rt_val;
 

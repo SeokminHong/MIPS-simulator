@@ -127,7 +127,7 @@ void Machine::EX()
 {
     ex_mem.m = std::move(id_ex.m);
     ex_mem.wb = std::move(id_ex.wb);
-    ex_mem.pc = ALU(EALU::ADD, id_ex.pc, id_ex.address << 2);
+    ex_mem.offsettedPC = ALU(EALU::ADD, id_ex.pc, id_ex.address << 2);
 
     mux_fwd0.SetValue(0, id_ex.rs_val);
     mux_fwd1.SetValue(0, id_ex.rt_val);
@@ -141,8 +141,14 @@ void Machine::EX()
     hazardDetector.id_ex_memRead = id_ex.m.memRead;
 
     EALU control = GetALUControl(id_ex.ex.op, id_ex.ex.funct);
+    // JAL
+    if (id_ex.ex.op == 3)
+    {
+        ex_mem.aluResult = id_ex.pc;
+        ex_mem.rd = *ERegister::ra;
+    }
     // It is not shift operation.
-    if (control != EALU::SLL && control != EALU::SRL && control != EALU::SRA)
+    else if (control != EALU::SLL && control != EALU::SRL && control != EALU::SRA)
     {
         ex_mem.aluResult = ALU(control, mux_fwd0.GetValue(forwarding.GetA()), mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.zero);
     }
@@ -160,7 +166,7 @@ void Machine::MEM()
 {
     if (!hazardDetector.IsHazardDetected())
     {
-        mux_branch.SetValue(1, ex_mem.pc);
+        mux_branch.SetValue(1, ex_mem.offsettedPC);
         pc_t newPC = mux_branch.GetValue((ex_mem.zero == ex_mem.m.beq) && ex_mem.m.branch);
         mux_jump.SetValue(0, newPC);
         newPC = mux_jump.GetValue(ex_mem.m.jump);
