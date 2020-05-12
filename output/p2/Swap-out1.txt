@@ -531,7 +531,6 @@ Registers:
 Memory I/O: 
 
 Cycle 15
-Jump!! 76
 PC: 002C
 Instruction: 08000013
 Registers:
@@ -836,7 +835,6 @@ Registers:
 Memory I/O: W 4 010c 99882211
 
 Cycle 23
-Jump!! 48
 PC: 005C
 Instruction: 0c00000c
 Registers:
@@ -1217,7 +1215,6 @@ Registers:
 Memory I/O: W 4 0104 01234567
 
 Cycle 33
-Jump!! 96
 PC: 0048
 Instruction: 03e00008
 Registers:
@@ -1750,7 +1747,6 @@ Registers:
 Memory I/O: W 4 010c 99882211
 
 Cycle 47
-Jump!! 48
 PC: 005C
 Instruction: 0c00000c
 Registers:

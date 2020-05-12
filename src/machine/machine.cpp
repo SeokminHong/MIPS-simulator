@@ -197,10 +197,6 @@ void Machine::MEM()
         pc_t newPC = mux_branch.GetValue((ex_mem.zero == ex_mem.m.beq) && ex_mem.m.branch);
         mux_jump.SetValue(0, newPC);
         newPC = mux_jump.GetValue(ex_mem.m.jump);
-        if (ex_mem.m.jump)
-        {
-            printf("Jump!! %d\n", newPC);
-        }
         if (branchUnresolved)
         {
             // If jump/branch occurs.
