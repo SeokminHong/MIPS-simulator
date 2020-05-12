@@ -18,6 +18,8 @@ void InitALUControl(EALU ALUControls[], EALU RFormats[])
     ALUControls[12] = EALU::AND;  // ANDI
     ALUControls[13] = EALU::OR;   // ORI
 
+    ALUControls[15] = EALU::SLL;   // LUI
+
     ALUControls[32] = EALU::ADD;  // LB
     ALUControls[33] = EALU::ADD;  // LH
     ALUControls[35] = EALU::ADD;  // LW

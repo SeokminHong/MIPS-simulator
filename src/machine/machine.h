@@ -71,6 +71,7 @@ private:
         int32_t rt_val = 0;
         int32_t address = 0;
         int32_t shamt = 0;
+        uint32_t jmp_address = 0;
         
         reg_t rd0 = 0;
         reg_t rd1 = 0;
@@ -116,8 +117,9 @@ private:
     int mode = 0;
 
     // Forwarding multiplexer
-    UMultiplexer<int32_t, 3> mux_fwd0;
-    UMultiplexer<int32_t, 3> mux_fwd1;
+    UMultiplexer<int32_t, 3> mux_fwd_a;
+    UMultiplexer<int32_t, 3> mux_fwd_b;
+    UMultiplexer<int32_t> mux_fwd_c;
 
     UForward forwarding{ *this };
 

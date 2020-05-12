@@ -42,10 +42,15 @@ public:
     int GetA() const;
     int GetB() const;
 
-    uint8_t id_ex_rs = 0;
-    uint8_t id_ex_rt = 0;
-    uint8_t ex_mem_rd = 0;
-    uint8_t mem_wb_rd = 0;
+    // Forward the read value from memory (eg. lw, lh, ...).
+    // It forwards when the store instruction locates just
+    // right after the load instructions.
+    int GetC() const;
+
+    uint8_t ex_rs = 0;
+    uint8_t ex_rt = 0;
+    uint8_t mem_rd = 0;
+    uint8_t wb_rd = 0;
 
     const Machine& owner;
 };
@@ -59,7 +64,8 @@ public:
 
     bool IsHazardDetected() const;
 
-    bool id_ex_memRead = false;
+    bool id_memWrite = false;
+    bool ex_memRead = false;
     uint8_t ex_rt = 0;
     uint8_t id_rs = 0;
     uint8_t id_rt = 0;

@@ -28,8 +28,21 @@ std::tuple<ctrl_EX, ctrl_M, ctrl_WB> Control(const inst_t& inst)
     // R-format
     if (op.raw == 0)
     {
-        ex.regDst = 1;
-        wb.regWrite = 1;
+        // JR
+        if (inst.reg.funct == 8)
+        {
+            m.jump = 1;
+        }
+        else
+        {
+            ex.regDst = 1;
+            wb.regWrite = 1;
+            // JALR
+            if (inst.reg.funct == 9)
+            {
+                m.jump = 1;
+            }
+        }        
     }
     // J
     else if (op.raw == 2)
@@ -131,11 +144,11 @@ int UForward::GetA() const
     {
         return 0;
     }
-    if (id_ex_rs == ex_mem_rd)
+    if (ex_rs == mem_rd)
     {
         return 2;
     }
-    if (id_ex_rs == mem_wb_rd)
+    if (ex_rs == wb_rd)
     {
         return 1;
     }
@@ -148,11 +161,24 @@ int UForward::GetB() const
     {
         return 0;
     }
-    if (id_ex_rt == ex_mem_rd)
+    if (ex_rt == mem_rd)
     {
         return 2;
     }
-    if (id_ex_rt == mem_wb_rd)
+    if (ex_rt == wb_rd)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int UForward::GetC() const
+{
+    if (owner.GetMode() == 0)
+    {
+        return 0;
+    }
+    if (mem_rd == wb_rd)
     {
         return 1;
     }
@@ -165,8 +191,12 @@ bool UHazardDetector::IsHazardDetected() const
     {
         return false;
     }
-    if (id_ex_memRead && ex_rt > 0 && ex_rt < REG_MAX)
+    if (ex_memRead && ex_rt > 0 && ex_rt < REG_MAX)
     {
+        if (id_memWrite && ex_rt == id_rt)
+        {
+            return false;
+        }
         return (id_rs == ex_rt) || (id_rt == ex_rt);
     }
     return false;

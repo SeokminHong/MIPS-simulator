@@ -75,6 +75,8 @@ public:
         return instruction;
     }
 
+    bool IsBranchOrJump() const;
+
 private:
     inst_t instruction;
 };

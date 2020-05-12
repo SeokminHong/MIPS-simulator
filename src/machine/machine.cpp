@@ -1,6 +1,5 @@
 #include "machine.h"
 #include <cstring>
-#include <algorithm>
 
 #define JUMP_BITMASK (15u << 28)
 
@@ -76,8 +75,7 @@ void Machine::IF()
     if (!NeedsStall())
     {
         if_id.curInst = curInst;
-        constexpr std::array<uint8_t, 4> branchOpCodes = { 2, 3, 4, 5 };
-        if (std::find(branchOpCodes.begin(), branchOpCodes.end(), curInst->GetOpCode()) != branchOpCodes.end())
+        if (curInst && curInst->IsBranchOrJump())
         {
             branchUnresolved = true;
         }
@@ -100,6 +98,7 @@ void Machine::ID()
 
     hazardDetector.id_rs = inst.reg.rs;
     hazardDetector.id_rt = inst.reg.rt;
+    hazardDetector.id_memWrite = std::get<1>(controlValue).memWrite;
 
     id_ex.pc = if_id.pc;
     
@@ -116,7 +115,7 @@ void Machine::ID()
     id_ex.rs = inst.base.rs;
     id_ex.rt = inst.base.rt;
 
-    mux_jump.SetValue(1, (pc & JUMP_BITMASK) | (~JUMP_BITMASK & (inst.direct.address << 2)));
+    id_ex.jmp_address = (pc & JUMP_BITMASK) | (~JUMP_BITMASK & (inst.direct.address << 2));
 }
 
 void Machine::EX()
@@ -125,28 +124,50 @@ void Machine::EX()
     ex_mem.wb = std::move(id_ex.wb);
     ex_mem.offsettedPC = ALU(EALU::ADD, id_ex.pc, id_ex.address << 2);
 
-    mux_fwd0.SetValue(0, id_ex.rs_val);
-    mux_fwd1.SetValue(0, id_ex.rt_val);
+    mux_fwd_a.SetValue(0, id_ex.rs_val);
+    mux_fwd_b.SetValue(0, id_ex.rt_val);
 
-    forwarding.id_ex_rs = id_ex.rs;
-    forwarding.id_ex_rt = id_ex.rt;
+    forwarding.ex_rs = id_ex.rs;
+    forwarding.ex_rt = id_ex.rt;
     
-    UMultiplexer<int32_t> mux_aluSrc{ mux_fwd1.GetValue(forwarding.GetB()), id_ex.address };
+    UMultiplexer<int32_t> mux_aluSrc{ mux_fwd_b.GetValue(forwarding.GetB()), id_ex.address };
 
     hazardDetector.ex_rt = id_ex.rt;
-    hazardDetector.id_ex_memRead = id_ex.m.memRead;
+    hazardDetector.ex_memRead = id_ex.m.memRead;
 
     EALU control = GetALUControl(id_ex.ex.op, id_ex.ex.funct);
+    pc_t jump_addr = id_ex.jmp_address;
     // JAL
     if (id_ex.ex.op == 3)
     {
         ex_mem.aluResult = id_ex.pc;
-        ex_mem.rd = *ERegister::ra;
+    }
+    // JR
+    else if (id_ex.ex.op == 0 && id_ex.ex.funct == 8)
+    {
+        jump_addr =  mux_fwd_a.GetValue(forwarding.GetA());
+    }
+    // JALR
+    else if (id_ex.ex.op == 0 && id_ex.ex.funct == 9)
+    {
+        ex_mem.aluResult = id_ex.pc;
+        jump_addr =  mux_fwd_a.GetValue(forwarding.GetA());
+    }
+    // ANDI, ORI
+    else if (id_ex.ex.op == 12 || id_ex.ex.op == 13)
+    {
+        // Remove sign-extends of bit operation for immediates.
+        ex_mem.aluResult = ALU(control, mux_fwd_a.GetValue(forwarding.GetA()), 0xffff & mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.zero);
+    }
+    // LUI
+    else if (id_ex.ex.op == 15)
+    {
+        ex_mem.aluResult = ALU(control, mux_aluSrc.GetValue(id_ex.ex.aluSrc), 16, ex_mem.zero);
     }
     // It is not shift operation.
     else if (control != EALU::SLL && control != EALU::SRL && control != EALU::SRA)
     {
-        ex_mem.aluResult = ALU(control, mux_fwd0.GetValue(forwarding.GetA()), mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.zero);
+        ex_mem.aluResult = ALU(control, mux_fwd_a.GetValue(forwarding.GetA()), mux_aluSrc.GetValue(id_ex.ex.aluSrc), ex_mem.zero);
     }
     else
     {
@@ -154,8 +175,18 @@ void Machine::EX()
     }
     
     ex_mem.rt_val = id_ex.rt_val;
-    UMultiplexer<uint32_t> mux_rd{ id_ex.rd0, id_ex.rd1 };
-    ex_mem.rd = mux_rd.GetValue(id_ex.ex.regDst);
+    // JAL
+    if (id_ex.ex.op == 3)
+    {
+        ex_mem.rd = *ERegister::ra;
+    }
+    else
+    {
+        UMultiplexer<uint32_t> mux_rd{ id_ex.rd0, id_ex.rd1 };
+        ex_mem.rd = mux_rd.GetValue(id_ex.ex.regDst);
+    }    
+
+    mux_jump.SetValue(1, jump_addr);
 }
 
 void Machine::MEM()
@@ -166,6 +197,10 @@ void Machine::MEM()
         pc_t newPC = mux_branch.GetValue((ex_mem.zero == ex_mem.m.beq) && ex_mem.m.branch);
         mux_jump.SetValue(0, newPC);
         newPC = mux_jump.GetValue(ex_mem.m.jump);
+        if (ex_mem.m.jump)
+        {
+            printf("Jump!! %d\n", newPC);
+        }
         if (branchUnresolved)
         {
             // If jump/branch occurs.
@@ -190,69 +225,81 @@ void Machine::MEM()
     mem_wb.wb = std::move(ex_mem.wb);
     mem_wb.rd = ex_mem.rd;
     
-    mux_fwd0.SetValue(2, ex_mem.aluResult);
-    mux_fwd1.SetValue(2, ex_mem.aluResult);
-    forwarding.ex_mem_rd = ex_mem.rd;
+    mux_fwd_a.SetValue(2, ex_mem.aluResult);
+    mux_fwd_b.SetValue(2, ex_mem.aluResult);
+    forwarding.mem_rd = ex_mem.rd;
 
     int bytes = *ex_mem.m.numBytes;
     if (ex_mem.m.memWrite)
     {
+        mux_fwd_c.SetValue(0, ex_mem.rt_val);
+        int32_t writeValue = mux_fwd_c.GetValue(forwarding.GetC());
+        uint32_t printValue = 0;
         switch (ex_mem.m.numBytes)
         {
             case EMemoryRW::byte:
             {
-                memory.Set<int8_t>(ex_mem.aluResult, ex_mem.rt_val);
+                printValue = writeValue & 255;
+                memory.Set<int8_t>(ex_mem.aluResult, writeValue);
                 break;
             }
             case EMemoryRW::half:
             {
-                memory.Set<int16_t>(ex_mem.aluResult, ex_mem.rt_val);
+                printValue = writeValue & 65535;
+                memory.Set<int16_t>(ex_mem.aluResult, writeValue);
                 break;
             }
             case EMemoryRW::word:
             {
-                memory.Set<int32_t>(ex_mem.aluResult, ex_mem.rt_val);
+                printValue = *(uint32_t*)&writeValue;
+                memory.Set<int32_t>(ex_mem.aluResult, writeValue);
                 break;
             }
             default: {}
         }
         std::string formatStr = "W %d %04x %04x";
-        formatStr[12] = bytes + '0';
-        sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, ex_mem.rt_val);
+        formatStr[12] = bytes * 2 + '0';
+        sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, printValue);
     }
     else if (ex_mem.m.memRead)
     {
+        uint32_t printValue = 0;
         switch (ex_mem.m.numBytes)
         {
             case EMemoryRW::byte:
             {
                 *((int32_t*)&mem_wb.readData) = memory.Get<int8_t>(ex_mem.aluResult);
+                printValue = mem_wb.readData & 255;
                 break;
             }
             case EMemoryRW::ubyte:
             {
                 mem_wb.readData = memory.Get<uint8_t>(ex_mem.aluResult);
+                printValue = mem_wb.readData;
                 break;
             }
             case EMemoryRW::half:
             {
                 *((int32_t*)&mem_wb.readData) = memory.Get<int16_t>(ex_mem.aluResult);
+                printValue = mem_wb.readData & 65535;
                 break;
             }
             case EMemoryRW::uhalf:
             {
                 mem_wb.readData = memory.Get<uint16_t>(ex_mem.aluResult);
+                printValue = mem_wb.readData;
                 break;
             }
             case EMemoryRW::word:
             {
                 mem_wb.readData = memory.Get<int32_t>(ex_mem.aluResult);
+                printValue = mem_wb.readData;
                 break;
             }
         }
         std::string formatStr = "R %d %04x %04x";
-        formatStr[12] = bytes + '0';
-        sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, mem_wb.readData);
+        formatStr[12] = bytes * 2 + '0';
+        sprintf(outputBuffer, formatStr.c_str(), bytes, ex_mem.aluResult, printValue);
     }
     else
     {
@@ -266,9 +313,10 @@ void Machine::WB()
     UMultiplexer<uint32_t> mux_memtoReg{ mem_wb.aluResult, mem_wb.readData };
     uint32_t value = mux_memtoReg.GetValue(mem_wb.wb.memtoReg);
     
-    mux_fwd0.SetValue(1, value);
-    mux_fwd1.SetValue(1, value);
-    forwarding.mem_wb_rd = mem_wb.rd;
+    mux_fwd_a.SetValue(1, value);
+    mux_fwd_b.SetValue(1, value);
+    mux_fwd_c.SetValue(1, value);
+    forwarding.wb_rd = mem_wb.rd;
 
     if (mem_wb.wb.regWrite)
     {
