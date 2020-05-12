@@ -48,7 +48,7 @@ static inline bool ReadLine(bool readParam = false)
     static bool skip = false;
     if (!readParam && skip)
     {
-        printf("Skip readline. Current cmd: %s\n", line.c_str());
+        // printf("Skip readline. Current cmd: %s\n", line.c_str());
         skip = false;
         return true;
     }
@@ -60,7 +60,7 @@ static inline bool ReadLine(bool readParam = false)
         // Empty line.
         if (line == "")
         {
-            puts("Empty line");
+            // puts("Empty line");
             continue;
         }
 
@@ -70,7 +70,7 @@ static inline bool ReadLine(bool readParam = false)
         {
             if (readParam)
             {
-                printf("Param: %s\n", line.c_str());
+                // printf("Param: %s\n", line.c_str());
                 return true;
             }
             printf("Unexpected token: %s\n", line.c_str());
@@ -79,11 +79,11 @@ static inline bool ReadLine(bool readParam = false)
         // Encounter keywords
         if (readParam)
         {
-            printf("Param encountered cmd %s\n", line.c_str());
+            // printf("Param encountered cmd %s\n", line.c_str());
             skip = true;
             return false;
         }
-        printf("Command: %s\n", line.c_str());
+        // printf("Command: %s\n", line.c_str());
         return true;
     }
     return false;
@@ -109,7 +109,6 @@ static std::unordered_map<std::string, int> regMap
 
 int Assemble();
 int MakeRegister();
-int MakeOutput(int mode);
 
 // Return value is a number of count.
 int main(int argc, char* argv[])
@@ -152,20 +151,7 @@ int main(int argc, char* argv[])
             {
                 return ret;
             }
-        }
-        else
-        {
-            int mode = 1;
-            if (line == commands[3])
-            {
-                mode = 0;
-            }
-            if (int ret = MakeOutput(mode))
-            {
-                return ret;
-            }
-        }
-        
+        }        
     }
 
     return count;
@@ -226,11 +212,11 @@ int MakeRegister()
 
     if (!outfile.is_open())
     {
-        printf ("Cannot open output file: %s\n", outFileName.c_str());
+        printf("Cannot open output file: %s\n", outFileName.c_str());
         return -1;
     }
     
-    printf ("Register output: %s\n", outFileName.c_str());
+    printf("Register output: %s\n", outFileName.c_str());
 
     while (ReadLine(true))
     {
@@ -298,71 +284,5 @@ int MakeRegister()
         sprintf(buffer, "%08x\n", regArr[i]);
         outfile << buffer;
     }
-    return 0;
-}
-
-int MakeOutput(int mode)
-{
-    return 0;
-    std::string outFileName = fileName.substr(0, parsePos) + "-out" + (mode ? '1' : '0') + ".txt";
-    
-    std::ofstream outfile;
-    outfile.open(outFileName);
-
-    if (!outfile.is_open())
-    {
-        printf ("Cannot open output file: %s\n", outFileName.c_str());
-        return -1;
-    }
-
-    std::unordered_map<int, std::vector<std::string>> states;
-    std::array<uint32_t, REG_MAX> regArrCpy(regArr);
-    char buffer[30];
-
-    for (int cycle = 1; cycle <= count; ++cycle)
-    {
-        if (cycle > 1)
-        {
-            printf("\n");
-        }
-        printf("Cycle %d:\n", cycle);
-        
-        auto it = states.find(cycle);
-        std::string memoryOutput{};
-        if (it != states.end())
-        {
-            for (const std::string& s : it->second)
-            {
-                std::stringstream ss{s};
-                std::string token;
-                ss >> token;
-                if (token == "mem")
-                {
-                    memoryOutput = s.substr(sizeof("mem"));
-                    for (char& c : memoryOutput)
-                    {
-                        c = std::toupper(c);
-                    }
-                }
-                else if (token == "nop")
-                {
-
-                }
-                // Update registers
-                else
-                {
-                    /* code */
-                }
-            }
-        }
-
-        for (int i = 0; i < REG_MAX; ++i)
-        {
-            sprintf(buffer, "[%d] %08X\n", i, regArrCpy[i]);
-            outfile << buffer;
-        }
-        sprintf(buffer, "Memory I/O: %s\n", memoryOutput.c_str());
-    }
-
     return 0;
 }
