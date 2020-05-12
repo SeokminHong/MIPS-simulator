@@ -173,11 +173,6 @@ int main(int argc, char* argv[])
 
 int Assemble()
 {
-    if (!ReadLine(true))
-    {
-        return -1;
-    }
-
     std::string outFileName = fileName.substr(0, parsePos) + "-code.txt";
     
     std::ofstream outfile;
@@ -191,18 +186,34 @@ int Assemble()
     
     printf ("Assembled output: %s\n", outFileName.c_str());
 
-    int val, offset = 0;
-    char outbuffer[20];
-    while (~sscanf(line.c_str() + offset, "\\x%x", &val))
+    if (!ReadLine(true))
     {
-        sprintf(outbuffer + (offset % 16) / 2, "%02x", val);
-        offset += 4;
-        if (offset % 16 == 0)
+        return -1;
+    }
+    if (line[0] == '\\')
+    {
+        int val, offset = 0;
+        char outbuffer[20];
+        while (~sscanf(line.c_str() + offset, "\\x%x", &val))
         {
-            strncat(outbuffer, "\n", 1);
-            outfile.write(outbuffer, 9);
+            sprintf(outbuffer + (offset % 16) / 2, "%02x", val);
+            offset += 4;
+            if (offset % 16 == 0)
+            {
+                strncat(outbuffer, "\n", 1);
+                outfile.write(outbuffer, 9);
+            }
         }
     }
+    else
+    {
+        do
+        {
+            outfile.write(line.c_str(), 8);
+            outfile.write("\n", 1);
+        } while (ReadLine(true));
+    }
+
     return 0;
 }
 
