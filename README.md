@@ -1,5 +1,7 @@
 # MIPS Simulator by Seokmin Hong
 
+The final project for computer architecture course.
+
 ## Build
 
     $ make
